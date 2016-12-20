@@ -105,6 +105,7 @@ dimnames(x)
 
 color_scheme_set("green")
 mcmc_acf(x, pars = c("alpha", "beta[1]"))
+\donttest{
 color_scheme_set("pink")
 (p <- mcmc_acf_bar(x, pars = c("alpha", "beta[1]")))
 
@@ -112,7 +113,7 @@ color_scheme_set("pink")
 p +
  yaxis_ticks() +
  hline_at(0.5, linetype = 2, size = 0.15, color = "gray")
-
+}
 
 # fake rhat values to use for demonstration
 rhat <- c(runif(100, 1, 1.15))
@@ -172,7 +173,7 @@ Guide and Reference Manual.} \url{http://mc-stan.org/documentation/}
 Other MCMC: \code{\link{MCMC-combos}},
   \code{\link{MCMC-distributions}},
   \code{\link{MCMC-intervals}}, \code{\link{MCMC-nuts}},
-  \code{\link{MCMC-overview}},
+  \code{\link{MCMC-overview}}, \code{\link{MCMC-recover}},
   \code{\link{MCMC-scatterplots}},
   \code{\link{MCMC-traces}}
 }

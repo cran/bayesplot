@@ -1,20 +1,27 @@
-## ---- settings, include=FALSE--------------------------------------------
+params <-
+structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+
+## ---- SETTINGS-knitr, include=FALSE--------------------------------------
+stopifnot(require("knitr"))
 library("bayesplot")
-library("ggplot2")
-library("gridExtra")
-library("rstan")
 knitr::opts_chunk$set(
-  dev = "pdf",
+  dev = "png",
+  dpi = 150,
+  fig.asp = 0.618,
+  fig.width = 5,
+  out.width = "60%",
   fig.align = "center",
-  fig.width = 4,
-  fig.height = 3,
-  comment = NA
+  comment = NA,
+  eval = !params$DONTRUN
 )
+
+## ---- pkgs, include=FALSE------------------------------------------------
+library("ggplot2")
+library("rstan")
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  library("bayesplot")
 #  library("ggplot2")
-#  library("gridExtra")
 #  library("rstan")
 
 ## ---- schools_dat--------------------------------------------------------
@@ -61,14 +68,13 @@ print(ratios1)
 mcmc_neff(ratios1)
 
 ## ----mcmc_neff-compare---------------------------------------------------
-# A function we'll use several times to plot comparisons of the centered
-# parameterization (cp) and the non-centered parameterization (ncp)
-compare_cp_ncp <- function(cp_plot, ncp_plot, ...) {
-  grid.arrange(
-    cp_plot + labs(subtitle = "Centered parameterization"),
-    ncp_plot + labs(subtitle = "Non-centered parameterization"), 
-    ...
-  )
+# A function we'll use several times to plot comparisons of the centered 
+# parameterization (cp) and the non-centered parameterization (ncp). See
+# help("bayesplot_grid") for details on the bayesplot_grid function used here.
+compare_cp_ncp <- function(cp_plot, ncp_plot, ncol = 1) {
+  txt <- c("Centered parameterization", "Non-centered parameterization")
+  bayesplot_grid(cp_plot, ncp_plot, subtitles = txt, 
+                 grid_args = list(ncol = ncol))
 }
 
 neff1 <- neff_ratio(fit1, pars = c("theta", "mu", "tau"))
@@ -76,11 +82,14 @@ neff2 <- neff_ratio(fit2, pars = c("theta", "mu", "tau"))
 compare_cp_ncp(mcmc_neff(neff1), mcmc_neff(neff2))
 
 ## ----mcmc_acf------------------------------------------------------------
-grid.arrange(
+compare_cp_ncp(
   mcmc_acf(posterior1, pars = "theta[1]", lags = 10),
-  mcmc_acf(posterior2, pars = "eta[1]", lags = 10),
+  mcmc_acf(posterior2, pars = "eta[1]", lags = 10), 
   ncol = 2
 )
+
+## ---- available_mcmc-nuts------------------------------------------------
+available_mcmc(pattern = "_nuts_")
 
 ## ---- extract-nuts-info--------------------------------------------------
 lp1 <- log_posterior(fit1)
@@ -91,6 +100,11 @@ head(np1)
 # for the second model
 lp2 <- log_posterior(fit2)
 np2 <- nuts_params(fit2)
+
+## ---- mcmc_trace---------------------------------------------------------
+color_scheme_set("mix-brightblue-gray")
+mcmc_trace(posterior1, pars = "tau", divergences = np1) + 
+  xlab("Post-warmup Iteration")
 
 ## ---- mcmc_nuts_divergence-----------------------------------------------
 color_scheme_set("red")

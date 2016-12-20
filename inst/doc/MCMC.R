@@ -1,11 +1,18 @@
-## ---- settings, include=FALSE--------------------------------------------
-library(bayesplot)
+params <-
+structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+
+## ---- SETTINGS-knitr, include=FALSE--------------------------------------
+stopifnot(require("knitr"))
+library("bayesplot")
 knitr::opts_chunk$set(
-  dev = "pdf",
+  dev = "png",
+  dpi = 150,
+  fig.asp = 0.618,
+  fig.width = 5,
+  out.width = "60%",
   fig.align = "center",
-  fig.width = 6,
-  fig.height = 4,
-  comment = NA
+  comment = NA,
+  eval = !params$DONTRUN
 )
 
 ## ---- eval=FALSE, results='hide'-----------------------------------------
@@ -50,17 +57,17 @@ mcmc_areas(
   point_est = "mean"
 )
 
-## ---- mcmc_hist, message=FALSE, fig.height=3-----------------------------
+## ---- mcmc_hist, message=FALSE-------------------------------------------
 color_scheme_set("green")
 mcmc_hist(posterior, pars = c("wt", "am"))
 mcmc_dens(posterior, pars = c("wt", "am"))
 
-## ---- mcmc_hist_by_chain, message=FALSE, fig.height=3--------------------
+## ---- mcmc_hist_by_chain, message=FALSE----------------------------------
 color_scheme_set("brightblue")
 mcmc_hist_by_chain(posterior, pars = c("wt", "am"))
 mcmc_dens_overlay(posterior, pars = c("wt", "am"))
 
-## ---- mcmc_violin, fig.height=3------------------------------------------
+## ---- mcmc_violin--------------------------------------------------------
 mcmc_violin(posterior, pars = c("wt", "am"), probs = c(0.1, 0.5, 0.9))
 
 ## ---- mcmc_scatter-------------------------------------------------------
@@ -73,8 +80,9 @@ mcmc_trace(posterior, pars = c("wt", "sigma"))
 
 ## ---- change-scheme------------------------------------------------------
 color_scheme_set("mix-blue-red")
-mcmc_trace(posterior, pars = c("wt", "sigma"))
+mcmc_trace(posterior, pars = c("wt", "sigma"), 
+           facet_args = list(ncol = 1, strip.position = "left"))
 
 ## ---- mcmc_trace_highlight-----------------------------------------------
-mcmc_trace_highlight(posterior, pars = c("wt", "sigma"), highlight = 3)
+mcmc_trace_highlight(posterior, pars = "sigma", highlight = 3)
 

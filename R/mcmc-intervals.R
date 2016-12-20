@@ -89,7 +89,8 @@
 #'
 #' color_scheme_set("teal")
 #' mcmc_intervals(x, point_est = "mean", prob = 0.8, prob_outer = 0.95)
-#' mcmc_areas(x, regex_pars = "cyl", bw = "SJ")
+#' mcmc_areas(x, regex_pars = "cyl", bw = "SJ",
+#'            rhat = rhat(fit, regex_pars = "cyl"))
 #' }
 #'
 #'
@@ -107,6 +108,7 @@ mcmc_intervals <- function(x,
                            point_est = c("median", "mean", "none"),
                            rhat = numeric()) {
   check_ignored_arguments(...)
+  stopifnot(prob_outer >= prob)
   x <- prepare_mcmc_array(x, pars, regex_pars, transformations)
   .mcmc_intervals(
     x = merge_chains(x),
@@ -133,6 +135,7 @@ mcmc_areas <- function(x,
                        adjust = NULL,
                        kernel = NULL) {
   check_ignored_arguments(...)
+  stopifnot(prob_outer >= prob)
   x <- prepare_mcmc_array(x, pars, regex_pars, transformations)
   .mcmc_intervals(
     x = merge_chains(x),
@@ -146,7 +149,6 @@ mcmc_areas <- function(x,
     kernel = kernel
   )
 }
-
 
 
 # internal ----------------------------------------------------------------
@@ -199,12 +201,11 @@ mcmc_areas <- function(x,
 
   graph <- ggplot(data)
 
+  # faint vertical line at zero if zero is within x_lim
+  if (0 > x_lim[1] && 0 < x_lim[2])
+    graph <- graph + vline_0(color = "gray90", size = 0.5)
+
   if (show_density) {
-    # faint vertical line at zero if zero is within x_lim
-    if (0 > x_lim[1] && 0 < x_lim[2])
-      graph <- graph + vline_0(color = "gray90", size = 0.5)
-
-
     # density outline
     n_dens_pts <- 512
     y_dens <- matrix(0, nrow = n_dens_pts, ncol = n_param)

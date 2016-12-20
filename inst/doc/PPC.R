@@ -1,11 +1,18 @@
-## ---- settings, include=FALSE--------------------------------------------
+params <-
+structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+
+## ---- SETTINGS-knitr, include=FALSE--------------------------------------
+stopifnot(require("knitr"))
 library("bayesplot")
 knitr::opts_chunk$set(
-  dev = "pdf",
+  dev = "png",
+  dpi = 150,
+  fig.asp = 0.618,
+  fig.width = 5,
+  out.width = "60%",
   fig.align = "center",
-  fig.width = 4,
-  fig.height = 4,
-  comment = NA
+  comment = NA,
+  eval = !params$DONTRUN
 )
 
 ## ---- roaches-model, results="hide", message=FALSE,warning=FALSE---------
@@ -40,7 +47,7 @@ yrep_nb <- posterior_predict(fit_nb, draws = 500)
 dim(yrep_poisson)
 dim(yrep_nb)
 
-## ----ppc_dens_overlay, fig.height=3--------------------------------------
+## ----ppc_dens_overlay----------------------------------------------------
 library("ggplot2")
 library("bayesplot")
 
@@ -49,13 +56,13 @@ color_scheme_set("brightblue") # see help("bayesplot-colors")
 y <- roaches$y
 ppc_dens_overlay(y, yrep_poisson[1:50, ])
 
-## ----ppc_hist, fig.width=6, message=FALSE--------------------------------
+## ----ppc_hist, message=FALSE---------------------------------------------
 ppc_hist(y, yrep_poisson[1:5, ])
 
-## ----ppc_hist-nb, fig.width=6, message=FALSE-----------------------------
+## ----ppc_hist-nb, message=FALSE------------------------------------------
 ppc_hist(y, yrep_nb[1:5, ])
 
-## ----ppc_hist-nb-2, fig.width=6, message=FALSE---------------------------
+## ----ppc_hist-nb-2, message=FALSE----------------------------------------
 ppc_hist(y, yrep_nb[1:5, ], binwidth = 20) + 
   coord_cartesian(xlim = c(-1, 500))
 
@@ -63,17 +70,26 @@ ppc_hist(y, yrep_nb[1:5, ], binwidth = 20) +
 prop_zero <- function(x) mean(x == 0)
 prop_zero(y) # check proportion of zeros in y
 
-## ----ppc_stat, fig.height=3, message=FALSE-------------------------------
+## ----ppc_stat, message=FALSE---------------------------------------------
 ppc_stat(y, yrep_poisson, stat = "prop_zero")
 
-## ----ppc_stat-nb, fig.height=3, message=FALSE----------------------------
+## ----ppc_stat-nb, message=FALSE------------------------------------------
 ppc_stat(y, yrep_nb, stat = "prop_zero")
 
-## ----ppc_stat-max, fig.height=3, message=FALSE---------------------------
+## ----ppc_stat-max, message=FALSE-----------------------------------------
 ppc_stat(y, yrep_poisson, stat = "max")
 ppc_stat(y, yrep_nb, stat = "max")
 ppc_stat(y, yrep_nb, stat = "max", binwidth = 100) + 
   coord_cartesian(xlim = c(-1, 5000))
+
+## ---- available_ppc------------------------------------------------------
+available_ppc()
+
+## ----ppc_stat_grouped, message=FALSE-------------------------------------
+ppc_stat_grouped(y, yrep_nb, group = roaches$treatment, stat = "prop_zero")
+
+## ---- available_ppc-grouped----------------------------------------------
+available_ppc(pattern = "_grouped")
 
 ## ---- pp_check.foo-------------------------------------------------------
 pp_check.foo <- function(object, ..., type = c("multiple", "overlaid")) {
@@ -91,15 +107,12 @@ x <- list(y = rnorm(50), yrep = matrix(rnorm(5000), nrow = 100, ncol = 50))
 class(x) <- "foo"
 
 ## ---- pp_check-1, eval=FALSE---------------------------------------------
-#  bayesplot::pp_check(x)
+#  pp_check(x)
 
 ## ---- print-1, echo=FALSE------------------------------------------------
-gg <- bayesplot::pp_check(x)
+gg <- pp_check(x)
 suppressMessages(print(gg))
 
-## ---- pp_check-2, eval=FALSE---------------------------------------------
-#  bayesplot::pp_check(x, type = "overlaid")
-
-## ---- print2, echo=FALSE-------------------------------------------------
-bayesplot::pp_check(x, type = "overlaid")
+## ---- pp_check-2---------------------------------------------------------
+pp_check(x, type = "overlaid")
 

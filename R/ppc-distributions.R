@@ -75,10 +75,10 @@
 #'
 #' ppc_freqpoly(y, yrep[1:3,], alpha = 0.1, size = 1, binwidth = 5)
 #'
-#' \donttest{
 #' # if groups are different sizes then the 'freq' argument can be useful
 #' group <- example_group_data()
 #' ppc_freqpoly_grouped(y, yrep[1:3,], group) + yaxis_text()
+#' \donttest{
 #' ppc_freqpoly_grouped(y, yrep[1:3,], group, freq = FALSE) + yaxis_text()
 #' }
 #'
@@ -188,8 +188,9 @@ ppc_freqpoly <- function(y, yrep, ...,
     facet_bg(FALSE)
 }
 
-#' @export
 #' @rdname PPC-distributions
+#' @export
+#' @template args-group
 #'
 ppc_freqpoly_grouped <-
   function(y,
@@ -292,6 +293,7 @@ ppc_dens_overlay <- function(y, yrep, ...,
       aes_(color = "y"),
       geom = "line",
       position = "identity",
+      lineend = "round",
       size = 1,
       trim = trim
     ) +
@@ -344,7 +346,6 @@ ppc_ecdf_overlay <- function(y, yrep, ...,
 
 #' @export
 #' @rdname PPC-distributions
-#' @template args-group
 #' @param probs A numeric vector passed to \code{\link[ggplot2]{geom_violin}}'s
 #'   \code{draw_quantiles} argument to specify at which quantiles to draw
 #'   horizontal lines. Set to \code{NULL} to remove the lines.

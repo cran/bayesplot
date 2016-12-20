@@ -56,14 +56,15 @@
 #' # histograms of some parameters
 #' color_scheme_set("pink")
 #' mcmc_hist(x, pars = c("alpha", "beta[2]"))
+#' \donttest{
 #' mcmc_hist(x, pars = "sigma", regex_pars = "beta")
-#'
+#' }
 #' # example of using 'transformations' argument to plot log(sigma),
 #' # and parsing facet labels (e.g. to get greek letters for parameters)
 #' mcmc_hist(x, transformations = list(sigma = "log"),
 #'           facet_args = list(labeller = ggplot2::label_parsed)) +
 #'           facet_text(size = 15)
-#'
+#' \donttest{
 #' # instead of list(sigma = "log"), you could specify the transformation as
 #' # list(sigma = log) or list(sigma = function(x) log(x)), but then the
 #' # label for the transformed sigma is 't(sigma)' instead of 'log(sigma)'
@@ -72,20 +73,20 @@
 #' # separate histograms by chain
 #' color_scheme_set("pink")
 #' mcmc_hist_by_chain(x, regex_pars = "beta")
-#'
+#' }
 #' #################
 #' ### Densities ###
 #' #################
 #'
 #' mcmc_dens(x, pars = c("sigma", "beta[2]"),
 #'           facet_args = list(nrow = 2))
-#'
+#' \donttest{
 #' # separate and overlay chains
 #' color_scheme_set("mix-teal-pink")
 #' mcmc_dens_overlay(x, pars = c("sigma", "beta[2]"),
 #'                   facet_args = list(nrow = 2)) +
 #'                   facet_text(size = 14)
-#'
+#' }
 #' # separate chains as violin plots
 #' color_scheme_set("green")
 #' mcmc_violin(x) + panel_bg(color = "gray20", size = 2, fill = "gray30")
@@ -103,6 +104,7 @@ mcmc_hist <- function(x,
                       facet_args = list(),
                       ...,
                       binwidth = NULL) {
+  check_ignored_arguments(...)
   .mcmc_hist(
     x,
     pars = pars,
@@ -124,6 +126,7 @@ mcmc_dens <- function(x,
                       facet_args = list(),
                       ...,
                       trim = FALSE) {
+  check_ignored_arguments(...)
   .mcmc_dens(
     x,
     pars = pars,
@@ -146,6 +149,7 @@ mcmc_hist_by_chain <- function(x,
                                facet_args = list(),
                                ...,
                                binwidth = NULL) {
+  check_ignored_arguments(...)
   .mcmc_hist(
     x,
     pars = pars,
@@ -167,6 +171,7 @@ mcmc_dens_overlay <- function(x,
                               facet_args = list(),
                               ...,
                               trim = FALSE) {
+  check_ignored_arguments(...)
   .mcmc_dens(
     x,
     pars = pars,
@@ -189,6 +194,7 @@ mcmc_violin <- function(x,
                         facet_args = list(),
                         ...,
                         probs = c(0.1, 0.5, 0.9)) {
+  check_ignored_arguments(...)
   .mcmc_dens(
     x,
     pars = pars,
