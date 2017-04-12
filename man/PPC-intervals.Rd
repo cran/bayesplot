@@ -13,10 +13,10 @@ ppc_intervals(y, yrep, x, ..., prob = 0.9, size = 1, fatten = 3)
 ppc_intervals_grouped(y, yrep, x, group, facet_args = list(), ...,
   prob = 0.9, size = 1, fatten = 3)
 
-ppc_ribbon(y, yrep, x, ..., prob = 0.9, alpha = 0.33, size = 1)
+ppc_ribbon(y, yrep, x, ..., prob = 0.9, alpha = 0.33, size = 0.25)
 
 ppc_ribbon_grouped(y, yrep, x, group, facet_args = list(), ..., prob = 0.9,
-  alpha = 0.33, size = 1)
+  alpha = 0.33, size = 0.25)
 }
 \arguments{
 \item{y}{A vector of observations. See \strong{Details}.}
@@ -57,8 +57,7 @@ A ggplot object that can be further customized using the
 }
 \description{
 Medians and central interval estimates of \code{yrep} with \code{y} overlaid.
-See the \strong{Plot Descriptions} section, below. This functionality  will
-greatly expand in future releases of the package.
+See the \strong{Plot Descriptions} section, below.
 }
 \section{Plot Descriptions}{
 
@@ -82,6 +81,7 @@ greatly expand in future releases of the package.
   }
 }
 }
+
 \examples{
 y <- rnorm(50)
 yrep <- matrix(rnorm(5000, 0, 2), ncol = 50)
@@ -142,9 +142,10 @@ Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari,
   Press, London, third edition. (Ch. 6)
 }
 \seealso{
-Other PPCs: \code{\link{PPC-distributions}},
-  \code{\link{PPC-errors}}, \code{\link{PPC-overview}},
+Other PPCs: \code{\link{PPC-discrete}},
+  \code{\link{PPC-distributions}},
+  \code{\link{PPC-errors}}, \code{\link{PPC-loo}},
+  \code{\link{PPC-overview}},
   \code{\link{PPC-scatterplots}},
   \code{\link{PPC-test-statistics}}
 }
-

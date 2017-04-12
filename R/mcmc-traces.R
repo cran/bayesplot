@@ -58,10 +58,17 @@
 #' dimnames(x)
 #'
 #' # traceplots of the betas
-#' color_scheme_set("brightblue")
+#' color_scheme_set("viridis")
+#' mcmc_trace(x, regex_pars = "beta")
+#' \donttest{
+#' color_scheme_set("viridisA")
 #' mcmc_trace(x, regex_pars = "beta")
 #'
-#' # can use a mixed color scheme to better differentiate the chains
+#' color_scheme_set("viridisC")
+#' mcmc_trace(x, regex_pars = "beta")
+#' }
+#'
+#' # mix color schemes
 #' color_scheme_set("mix-blue-red")
 #' mcmc_trace(x, regex_pars = "beta")
 #'
@@ -70,8 +77,11 @@
 #'  ggplot2::scale_color_discrete()
 #'
 #' # zoom in on a window of iterations, increase line size,
-#' # add tick marks, and move legend to the top
-#' mcmc_trace(x, window = c(100, 130), size = 1) + legend_move("top")
+#' # add tick marks, move legend to the top, add gray background
+#' color_scheme_set("viridisA")
+#' mcmc_trace(x[,, 1:4], window = c(100, 130), size = 1) +
+#'   panel_bg(fill = "gray90", color = NA) +
+#'   legend_move("top")
 #'
 #' \dontrun{
 #' # parse facet label text
@@ -250,14 +260,19 @@ mcmc_trace_highlight <-
     graph <- graph +
       scale_color_manual("Chain", values = chain_colors(n_chain))
 
-    if (!is.null(divergences))
-      graph <- graph +
-        divergence_rug(divergences, n_iter) +
-        guides(
-          color = guide_legend(order = 1),
-          linetype = guide_legend(order = 2, title = NULL, keywidth = rel(1/2),
-                                  override.aes = list(size = rel(1/2)))
-        )
+    if (!is.null(divergences)) {
+      div_rug <- divergence_rug(divergences, n_iter, n_chain)
+      if (!is.null(div_rug))
+        graph <- graph +
+          div_rug +
+          guides(
+            color = guide_legend(order = 1),
+            linetype = guide_legend(order = 2,
+                                    title = NULL,
+                                    keywidth = rel(1/2),
+                                    override.aes = list(size = rel(1/2)))
+          )
+    }
   }
 
   facet_args$facets <- ~ Parameter
@@ -294,11 +309,16 @@ chain_colors <- function(n) {
 # @param divergences User's 'divergences' argument, if specified
 # @param n_iter Number of iterations in the trace plot (to check against number
 #   of iterations provided in 'divergences')
+# @param n_chain Number of chains in the trace plot (to check against number
+#   of chains provided in 'divergences')
 # @param color,size Passed to geom_rug.
-divergence_rug <- function(divergences, n_iter, color = "red", size = 1/4) {
+divergence_rug <- function(divergences, n_iter, n_chain, color = "red", size = 1/4) {
   if (is.data.frame(divergences)) {
     divergences <- validate_nuts_data_frame(divergences)
-    stopifnot(length(unique(divergences$Iteration)) == n_iter)
+    stopifnot(
+      length(unique(divergences$Iteration)) == n_iter,
+      length(unique(divergences$Chain)) == n_chain
+    )
     div_info <-
       filter_(divergences, ~ Parameter == "divergent__") %>%
       group_by_(~ Iteration) %>%
@@ -313,8 +333,10 @@ divergence_rug <- function(divergences, n_iter, color = "red", size = 1/4) {
     divergences <- ifelse(divergences == 1, seq_along(divergences), NA)
     div_info <- data.frame(Divergent = divergences)
   }
-  if (all(is.na(div_info$Divergent)))
+  if (all(is.na(div_info$Divergent))) {
     message("No divergences to plot.")
+    return(NULL)
+  }
 
   geom_rug(
     aes_(x = ~ Divergent, linetype = "Divergence"),

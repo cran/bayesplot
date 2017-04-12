@@ -1,5 +1,5 @@
 params <-
-structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+structure(list(EVAL = TRUE), .Names = "EVAL")
 
 ## ---- SETTINGS-knitr, include=FALSE--------------------------------------
 stopifnot(require("knitr"))
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "60%",
   fig.align = "center",
   comment = NA,
-  eval = !params$DONTRUN
+  eval = params$EVAL
 )
 
 ## ---- eval=FALSE, results='hide'-----------------------------------------
@@ -29,7 +29,8 @@ knitr::opts_chunk$set(
 ## ----stan_glm, echo=FALSE, results='hide'--------------------------------
 suppressPackageStartupMessages(library("rstanarm"))
 fit <- stan_glm(
-  mpg ~ ., data = mtcars, 
+  mpg ~ ., 
+  data = mtcars, 
   chains = 4, 
   iter = 2000,
   seed = 1111
@@ -74,6 +75,9 @@ mcmc_violin(posterior, pars = c("wt", "am"), probs = c(0.1, 0.5, 0.9))
 color_scheme_set("gray")
 mcmc_scatter(posterior, pars = c("(Intercept)", "wt"), size = 1.5, alpha = 0.5)
 
+## ---- mcmc_hex-----------------------------------------------------------
+mcmc_hex(posterior, pars = c("(Intercept)", "wt"))
+
 ## ---- mcmc_trace---------------------------------------------------------
 color_scheme_set("blue")
 mcmc_trace(posterior, pars = c("wt", "sigma"))
@@ -82,6 +86,10 @@ mcmc_trace(posterior, pars = c("wt", "sigma"))
 color_scheme_set("mix-blue-red")
 mcmc_trace(posterior, pars = c("wt", "sigma"), 
            facet_args = list(ncol = 1, strip.position = "left"))
+
+## ---- viridis-scheme-----------------------------------------------------
+color_scheme_set("viridis")
+mcmc_trace(posterior, pars = "(Intercept)")
 
 ## ---- mcmc_trace_highlight-----------------------------------------------
 mcmc_trace_highlight(posterior, pars = "sigma", highlight = 3)

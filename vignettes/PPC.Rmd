@@ -9,8 +9,8 @@ vignette: >
   %\VignetteIndexEntry{Graphical posterior predictive checks}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-params: 
-  DONTRUN: !r grepl("^sparc", R.version$platform)
+params:
+  EVAL: !r identical(Sys.getenv("NOT_CRAN"), "true")
 ---
 
 ```{r, child="children/SETTINGS-knitr.txt"}
@@ -86,17 +86,11 @@ library("rstanarm")
 head(roaches) # see help("rstanarm-datasets")
 
 roaches$roach1 <- roaches$roach1 / 100 # pre-treatment number of roaches (in 100s)
-fit_poisson <- stan_glm(
-  y ~ roach1 + treatment + senior, 
-  data = roaches,
-  offset = log(exposure2), 
-  family = poisson(link = "log"), 
-  prior = normal(0, 2.5), 
-  prior_intercept = normal(0, 5),
-  chains = 4, 
-  iter = 2000,
-  seed = 1111
-)
+fit_poisson <- stan_glm(y ~ roach1 + treatment + senior,
+                        offset = log(exposure2),
+                        family = poisson(link = "log"),
+                        data = roaches,
+                        seed = 1111)
 ```
 
 ```{r, print}
@@ -125,7 +119,7 @@ dim(yrep_nb)
 ```
 
 For each of the `yrep` matrices, every row is a draw from the posterior 
-predictive distribution, i.e. a vector with `r ncol(yrep_poisson)` elements, one
+predictive distribution, i.e. a vector with one element 
 for each of the data points in `y`.
 
 ### Histograms and density estimates
@@ -196,8 +190,8 @@ ppc_stat(y, yrep_poisson, stat = "prop_zero")
 ```
 
 In the plot the dark line is at the value $T(y)$, i.e. the value of the test
-statistic computed from the observed $y$, in this case `prop_zero(y)` ( roughly
-`r round(prop_zero(y), 2)`). It's hard to see because almost all the datasets in
+statistic computed from the observed $y$, in this case `prop_zero(y)`. 
+It's hard to see because almost all the datasets in
 `yrep` have no zeros, but the lighter bar is actually a histogram of the the
 proportion of zeros in each of the replicated datasets.
 
@@ -315,12 +309,12 @@ and [**brms**](https://github.com/paul-buerkner/brms) packages.
 
 ## References
 
-Buerkner, P. (2016). brms: Bayesian Regression Models using Stan. R package version 0.10.0. 
-https://CRAN.R-project.org/package=brms
+Buerkner, P. (2018). brms: Bayesian Regression Models using Stan. R package
+version 1.4.0. https://CRAN.R-project.org/package=brms
 
-Gabry, J., and Goodrich, B. (2016). rstanarm: Bayesian Applied Regression 
-Modeling via Stan. R package version 2.11.1. 
-http://mc-stan.org/interfaces/rstanarm.html
+Gabry, J., and Goodrich, B. (2017). rstanarm: Bayesian Applied Regression 
+Modeling via Stan. R package version 2.14.1. 
+http://mc-stan.org/interfaces/rstanarm.html, https://CRAN.R-project.org/package=rstanarm
 
 Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., and Rubin, 
 D. B. (2013). *Bayesian Data Analysis*. Chapman & Hall/CRC Press, London, third 

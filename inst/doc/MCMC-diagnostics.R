@@ -1,5 +1,5 @@
 params <-
-structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+structure(list(EVAL = TRUE), .Names = "EVAL")
 
 ## ---- SETTINGS-knitr, include=FALSE--------------------------------------
 stopifnot(require("knitr"))
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "60%",
   fig.align = "center",
   comment = NA,
-  eval = !params$DONTRUN
+  eval = params$EVAL
 )
 
 ## ---- pkgs, include=FALSE------------------------------------------------

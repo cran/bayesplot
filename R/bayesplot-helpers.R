@@ -6,9 +6,10 @@
 #'
 #' @name bayesplot-helpers
 #'
-#' @param ... For the various \code{vline_} and \code{hline_} functions,
-#'   \code{...} is passed to \code{\link[ggplot2]{geom_vline}} or
-#'   \code{\link[ggplot2]{geom_hline}} to control the appearance of the line(s).
+#' @param ... For the various \code{vline_}, \code{hline_}, and \code{abline_}
+#'   functions, \code{...} is passed to \code{\link[ggplot2]{geom_vline}},
+#'   \code{\link[ggplot2]{geom_hline}}, and \code{\link[ggplot2]{geom_abline}},
+#'   respectively, to control the appearance of the line(s).
 #'
 #'   For functions ending in \code{_bg}, \code{...} is passed to
 #'   \code{\link[ggplot2]{element_rect}}.
@@ -19,13 +20,16 @@
 #'   For \code{xaxis_ticks} and \code{yaxis_ticks}, \code{...} is passed to
 #'   \code{\link[ggplot2]{element_line}}.
 #'
+#'   For \code{overlay_function}, \code{...} is passed to
+#'   \code{\link[ggplot2]{stat_function}}.
+#'
 #' @return
 #' A \pkg{ggplot2} layer or \code{\link[ggplot2]{theme}} object that can be
 #' added to existing ggplot objects, like those created by many of the
 #' \pkg{bayesplot} plotting functions. See the \strong{Details} section.
 #'
 #' @details
-#' \subsection{Add vertical or horizontal lines to plots at specified values}{
+#' \subsection{Add vertical, horizontal, and diagonal lines to plots}{
 #' \itemize{
 #' \item \code{vline_at} and \code{hline_at} return an object created by either
 #' \code{geom_vline} or \code{geom_hline} that can be added to a ggplot object
@@ -36,6 +40,9 @@
 #'
 #' \item \code{vline_0} and \code{hline_0} are wrappers for \code{vline_at} and
 #' \code{hline_at} with \code{v = 0} and \code{fun} missing.
+#'
+#' \item \code{abline_01} is a wrapper for \code{geom_abline} with the intercept
+#' set to 0 and the slope set to 1.
 #'
 #' \item \code{lbub} returns a \emph{function} that takes a single argument
 #' \code{x} and returns the lower and upper bounds (\code{lb}, \code{ub}) of the
@@ -87,6 +94,15 @@
 #' an existing plot (ggplot object) to add grid lines to the plot background.
 #' }
 #' }
+#' \subsection{Superimpose a function on an existing plot}{
+#' \itemize{
+#' \item \code{overlay_function} is a simple wrapper for
+#' \code{\link[ggplot2]{stat_function}} but with the \code{inherit.aes} argument
+#' fixed to \code{FALSE}. Fixing \code{inherit.aes=FALSE} will avoid potential
+#' errors due to the \code{\link[ggplot2]{aes}}thetic mapping used by certain
+#' \pkg{bayesplot} plotting functions).
+#' }
+#' }
 #'
 #' @seealso \code{\link{theme_default}} for the default ggplot theme used by
 #'   \pkg{bayesplot}.
@@ -96,6 +112,7 @@
 #' x <- example_mcmc_draws(chains = 1)
 #' dim(x)
 #' colnames(x)
+#'
 #'
 #' ###################################
 #' ### vertical & horizontal lines ###
@@ -139,6 +156,7 @@
 #'               size = 2 * c(1,.5,1), alpha = 0.75)
 #' p2 + vline_at(b1, lbub(0.8, med = FALSE), color = "gray20",
 #'               size = 2, alpha = 0.75)
+#'
 #'
 #' ##########################
 #' ### format axis titles ###
@@ -200,6 +218,27 @@
 #'  plot_bg(fill = "gray90") +
 #'  panel_bg(color = "black", fill = "gray99", size = 3)
 #' }
+#'
+#'
+#' ###############################################
+#' ### superimpose a function on existing plot ###
+#' ###############################################
+#' # compare posterior of beta[1] to Gaussian with same posterior mean
+#' # and sd as beta[1]
+#' x <- example_mcmc_draws(chains = 4)
+#' dim(x)
+#' purple_gaussian <-
+#'   overlay_function(
+#'     fun = dnorm,
+#'     args = list(mean(x[,, "beta[1]"]), sd(x[,, "beta[1]"])),
+#'     color = "purple",
+#'     size = 2
+#'   )
+#'
+#' color_scheme_set("gray")
+#' mcmc_hist(x, pars = "beta[1]") + purple_gaussian
+#' \donttest{mcmc_dens(x, pars = "beta[1]") + purple_gaussian}
+#'
 NULL
 
 
@@ -243,6 +282,16 @@ hline_0 <- function(..., na.rm = TRUE) {
   geom_hline(yintercept = 0,
              na.rm = na.rm,
              ...)
+}
+
+#' @rdname bayesplot-helpers
+#' @export
+#'
+abline_01 <- function(..., na.rm = TRUE) {
+  geom_abline(intercept = 0,
+              slope = 1,
+              na.rm = na.rm,
+              ...)
 }
 
 
@@ -399,6 +448,16 @@ plot_bg <- function(on = TRUE, ...) {
 #' @param color,size Passed to \code{\link[ggplot2]{element_line}}.
 #'
 grid_lines <- function(color = "gray50", size = 0.2) {
-  theme(panel.grid.major = element_line(color = color, size = size),
-        panel.grid.minor = element_line(color = color, size = size * 0.5))
+  theme(
+    panel.grid.major = element_line(color = color, size = size),
+    panel.grid.minor = element_line(color = color, size = size * 0.5)
+  )
+}
+
+
+# overlay functions on an existing plot -----------------------------------
+#' @rdname bayesplot-helpers
+#' @export
+overlay_function <- function(...) {
+  stat_function(..., inherit.aes = FALSE)
 }

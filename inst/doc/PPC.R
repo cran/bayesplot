@@ -1,5 +1,5 @@
 params <-
-structure(list(DONTRUN = FALSE), .Names = "DONTRUN")
+structure(list(EVAL = TRUE), .Names = "EVAL")
 
 ## ---- SETTINGS-knitr, include=FALSE--------------------------------------
 stopifnot(require("knitr"))
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "60%",
   fig.align = "center",
   comment = NA,
-  eval = !params$DONTRUN
+  eval = params$EVAL
 )
 
 ## ---- roaches-model, results="hide", message=FALSE,warning=FALSE---------
@@ -20,17 +20,11 @@ library("rstanarm")
 head(roaches) # see help("rstanarm-datasets")
 
 roaches$roach1 <- roaches$roach1 / 100 # pre-treatment number of roaches (in 100s)
-fit_poisson <- stan_glm(
-  y ~ roach1 + treatment + senior, 
-  data = roaches,
-  offset = log(exposure2), 
-  family = poisson(link = "log"), 
-  prior = normal(0, 2.5), 
-  prior_intercept = normal(0, 5),
-  chains = 4, 
-  iter = 2000,
-  seed = 1111
-)
+fit_poisson <- stan_glm(y ~ roach1 + treatment + senior,
+                        offset = log(exposure2),
+                        family = poisson(link = "log"),
+                        data = roaches,
+                        seed = 1111)
 
 ## ---- print--------------------------------------------------------------
 print(fit_poisson)

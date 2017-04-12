@@ -19,21 +19,27 @@
 #'
 #'   Currently, the available preset color schemes are:
 #'   \itemize{
-#'    \item \code{"blue"}
-#'    \item \code{"brightblue"}
-#'    \item \code{"gray"}
+#'    \item \code{"blue"}, \code{"brightblue"}
+#'    \item \code{"gray"}, \code{"darkgray"}
 #'    \item \code{"green"}
 #'    \item \code{"pink"}
 #'    \item \code{"purple"}
 #'    \item \code{"red"}
 #'    \item \code{"teal"}
 #'    \item \code{"yellow"}
+#'    \item \href{https://CRAN.R-project.org/package=viridis}{\code{"viridis"}},
+#'      \code{"viridisA"}, \code{"viridisB"}, \code{"viridisC"}
 #'    \item \code{"mix-x-y"}, replacing \code{x} and \code{y} with any two of
-#'    the scheme names listed above (e.g. "mix-teal-pink", "mix-blue-red",
-#'    etc.). The order of \code{x} and \code{y} matters, i.e., the color schemes
-#'    "mix-blue-red" and "mix-red-blue" are not identical. There is no gaurantee
-#'    that every possible mixed scheme will look good with every possible plot.
+#'      the scheme names listed above (e.g. "mix-teal-pink", "mix-blue-red",
+#'      etc.). The order of \code{x} and \code{y} matters, i.e., the color
+#'      schemes "mix-blue-red" and "mix-red-blue" are not identical. There is no
+#'      gaurantee that every possible mixed scheme will look good with every
+#'      possible plot.
 #'   }
+#'
+#'   If you have a suggestion for a new color scheme please let us know via the
+#'   \pkg{bayesplot} \href{https://github.com/stan-dev/bayesplot/issues}{issue
+#'   tracker}.
 #'
 #' @return \code{color_scheme_set} has the side effect of setting the color
 #'   scheme used for plotting. It also returns
@@ -43,7 +49,8 @@
 #'   \code{color_scheme_get} returns a \code{list} of the hexadecimal color
 #'   values (without changing the current scheme). If the \code{scheme} argument
 #'   is not specified the returned values correspond to the current color
-#'   scheme.
+#'   scheme. If the optional argument \code{i} is specified then the returned
+#'   list only contains \code{length(i)} elements.
 #'
 #'   \code{color_scheme_view} returns a ggplot object if only a single scheme is
 #'   specified and a gtable object if multiple schemes names are specified.
@@ -59,14 +66,17 @@
 #'
 #' @examples
 #' color_scheme_set("blue")
-#' color_scheme_get()
 #' color_scheme_view()
+#'
+#' color_scheme_get()
+#' color_scheme_get(i = c(3, 5)) # 3rd and 5th colors only
 #'
 #' color_scheme_get("brightblue")
 #' color_scheme_view("brightblue")
 #'
 #' # compare multiple schemes
 #' color_scheme_view(c("pink", "gray", "teal"))
+#' color_scheme_view(c("viridis", "viridisA", "viridisB", "viridisC"))
 #'
 #' color_scheme_set("pink")
 #' x <- example_mcmc_draws()
@@ -119,7 +129,12 @@ color_scheme_set <- function(scheme = "blue") {
 
 #' @rdname bayesplot-colors
 #' @export
-color_scheme_get <- function(scheme) {
+#' @param i For \code{color_scheme_get}, a subset of the integers from \code{1}
+#'   (lightest) to \code{6} (darkest) indicating which of the colors in the
+#'   scheme to return. If \code{i} is not specified then all six colors in the
+#'   scheme are included.
+#'
+color_scheme_get <- function(scheme, i) {
   if (!missing(scheme)) {
     scheme <- scheme_from_string(scheme)
   } else {
@@ -129,7 +144,17 @@ color_scheme_get <- function(scheme) {
     attr(scheme, "scheme_name") <- attr(x, "scheme_name")
   }
   class(scheme) <- c("bayesplot_scheme", "list")
-  scheme
+  if (missing(i)) {
+    return(scheme)
+  } else if (is.character(i)) {
+    return(get_color(i))
+  }
+
+  stopifnot(
+    all(i %in% seq_along(scheme)),
+    length(unique(i)) == length(i)
+  )
+  scheme[i]
 }
 
 #' @export
@@ -153,9 +178,9 @@ color_scheme_view <- function(scheme) {
   if (missing(scheme) || length(scheme) == 1)
     return(.view_scheme(scheme))
 
-  gridExtra::grid.arrange(
-    grobs = lapply(scheme, .view_scheme),
-    ncol = length(scheme)
+  bayesplot_grid(
+    plots = lapply(scheme, .view_scheme),
+    grid_args = list(ncol = length(scheme))
   )
 }
 
@@ -191,7 +216,6 @@ color_scheme_view <- function(scheme) {
     theme_void() +
     legend_none() +
     xaxis_text(
-      size = rel(1.1),
       face = "bold",
       margin = margin(t = -3, b = 10),
       angle = 0,
@@ -320,10 +344,14 @@ master_color_list <- list(
     list("#d1e1ec", "#b3cde0", "#6497b1", "#005b96", "#03396c", "#011f4b"),
   brightblue =
     list("#cce5ff", "#99cbff", "#4ca5ff", "#198bff", "#0065cc", "#004c99"),
+  darkgray =
+    list("#bfbfbf", "#999999", "#737373", "#505050", "#383838", "#0d0d0d"),
   gray =
-    list("#DFDFDF", "#bfbfbf", "#999999", "#737373", "#505050", "#383838"), # "#0d0d0d"),
+    list("#DFDFDF", "#bfbfbf", "#999999", "#737373", "#505050", "#383838"),
   green =
     list("#d9f2e6", "#9fdfbf", "#66cc99", "#40bf80", "#2d8659", "#194d33"),
+  orange =
+    list("#fecba2", "#feb174", "#fe8a2f", "#e47115", "#b15810", "#7f3f0c"),
   pink =
     list("#dcbccc", "#c799b0", "#b97c9b", "#a25079", "#8f275b", "#7c003e"),
   purple =
@@ -333,7 +361,15 @@ master_color_list <- list(
   teal =
     list("#bcdcdc", "#99c7c7", "#7cb9b9", "#50a2a2", "#278f8f", "#007C7C"),
   yellow =
-    list("#fbf3da", "#f8e8b5", "#f5dc90", "#dbc376", "#aa975c", "#7a6c42")
+    list("#fbf3da", "#f8e8b5", "#f5dc90", "#dbc376", "#aa975c", "#7a6c42"),
+  viridis =
+    list("#FDE725FF", "#7AD151FF", "#22A884FF", "#2A788EFF", "#414487FF", "#440154FF"),
+  viridisA =
+    list("#FCFDBFFF", "#FE9F6DFF", "#DE4968FF", "#8C2981FF", "#3B0F70FF", "#000004FF"),
+  viridisB =
+    list("#FCFFA4FF", "#FCA50AFF", "#DD513AFF", "#932667FF", "#420A68FF", "#000004FF"),
+  viridisC =
+    list("#F0F921FF", "#FCA636FF", "#E16462FF", "#B12A90FF", "#6A00A8FF", "#0D0887FF")
 )
 
 # instantiate aesthetics --------------------------------------------------
