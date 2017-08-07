@@ -7,18 +7,21 @@ is_vector_or_1Darray <- function(x) {
 
 # Validate y
 #
-# Checks that y is numeric, doesn't have any NAs, and is either a vector or 1-D
-# array.
+# Checks that y is numeric, doesn't have any NAs, and is either a vector, 1-D
+# array, or univariate time series object of class \code{ts}.
 #
 # @param y The y object from the user.
 # @return Either throws an error or returns a numeric vector.
 #
 validate_y <- function(y) {
   stopifnot(is.numeric(y))
-  if (!is_vector_or_1Darray(y))
-    stop("'y' must be a vector or 1D array.")
 
-  y <- as.vector(y)
+  if (!(inherits(y, "ts") && is.null(dim(y)))) {
+    if (!is_vector_or_1Darray(y))
+      stop("'y' must be a vector or 1D array.")
+    y <- as.vector(y)
+  }
+
   if (anyNA(y))
     stop("NAs not allowed in 'y'.")
 
@@ -79,11 +82,17 @@ validate_group <- function(group, y) {
 # same length as y.
 #
 # @param x,y The user's x vector and the y object returned by validate_y.
+# @param unique_x T/F indicating whether to require all unique values in x.
 # @return Either throws an error or returns a numeric vector.
 #
 validate_x <- function(x, y, unique_x = FALSE) {
-  if (missing(x))
-    return(1:length(y))
+  if (missing(x)) {
+    if (inherits(y, "ts") && is.null(dim(y))) {
+      return(stats::time(y))
+    } else {
+      return(1:length(y))
+    }
+  }
 
   stopifnot(is.numeric(x))
   if (!is_vector_or_1Darray(x))
@@ -147,7 +156,7 @@ melt_and_stack <- function(y, yrep, label = TRUE) {
 
 # Prepare data for use in PPCs by group
 #
-# @param y,yrep,group Validated y, yrep, and group objects from the user.
+# @param y,yrep,group Validated y, yrep, and group objects.
 # @param stat Either NULL or a string naming a function.
 # @value If \code{stat} is NULL, a molten data frame grouped by group and
 #   variable. If \code{stat} specifies a function then a summary table created
@@ -169,14 +178,6 @@ ppc_group_data <- function(y, yrep, group, stat = NULL) {
     stat <- match.fun(stat)
 
   dplyr::summarise_(molten_d, value = ~stat(value))
-}
-
-# set mapping depending on freq argument
-set_hist_aes <- function(freq = TRUE, ...) {
-  if (freq)
-    aes_(x = ~ value, ...)
-  else
-    aes_(x = ~ value, y = ~ ..density.., ...)
 }
 
 # check if x consists of whole numbers (very close to integers)

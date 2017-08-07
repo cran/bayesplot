@@ -72,10 +72,8 @@
 #' color_scheme_set("pink")
 #' (p <- mcmc_acf_bar(x, pars = c("alpha", "beta[1]")))
 #'
-#' # add tick marks on y axis and horiztonal dashed line at 0.5
-#' p +
-#'  yaxis_ticks() +
-#'  hline_at(0.5, linetype = 2, size = 0.15, color = "gray")
+#' # add horiztonal dashed line at 0.5
+#' p + hline_at(0.5, linetype = 2, size = 0.15, color = "gray")
 #' }
 #'
 #' # fake rhat values to use for demonstration
@@ -106,11 +104,11 @@
 #' rhats <- rhat(fit)
 #' ratios <- neff_ratio(fit)
 #' mcmc_rhat(rhats)
-#' mcmc_neff(ratios)
+#' mcmc_neff(ratios, size = 3)
 #'
 #' # there's a small enough number of parameters in the
 #' # model that we can display their names on the y-axis
-#' mcmc_neff(ratios) + yaxis_text()
+#' mcmc_neff(ratios) + yaxis_text(hjust = 1)
 #'
 #' # can also look at autocorrelation
 #' draws <- as.array(fit)
@@ -173,7 +171,6 @@ mcmc_rhat <- function(rhat, ..., size = NULL) {
     scale_color_diagnostic("rhat") +
     scale_x_continuous(breaks = brks, expand = c(0, .01)) +
     scale_y_discrete(expand = c(.025,0)) +
-    theme_default() +
     yaxis_title(FALSE) +
     yaxis_text(FALSE) +
     yaxis_ticks(FALSE)
@@ -203,7 +200,6 @@ mcmc_rhat_hist <- function(rhat, ..., binwidth = NULL) {
     scale_fill_diagnostic("rhat") +
     labs(x = expression(hat(R)), y = NULL) +
     dont_expand_y_axis(c(0.005, 0)) +
-    theme_default() +
     yaxis_title(FALSE) +
     yaxis_text(FALSE) +
     yaxis_ticks(FALSE)
@@ -244,10 +240,12 @@ mcmc_neff <- function(ratio, ..., size = NULL) {
     labs(y = NULL, x = expression(N[eff]/N)) +
     scale_fill_diagnostic("neff") +
     scale_color_diagnostic("neff") +
-    scale_x_continuous(breaks = c(0.1, seq(0, 1, .25)),
-                       limits = c(0, 1), expand = c(0,.01)) +
-    scale_y_discrete(expand = c(.025,0)) +
-    theme_default() +
+    scale_x_continuous(
+      breaks = c(0, 0.1, 0.25, 0.5, 0.75, 1),
+      labels = c("0", "0.1", "0.25", "0.5", "0.75", "1"),
+      limits = c(0, 1.05),
+      expand = c(0, 0)
+    ) +
     yaxis_text(FALSE) +
     yaxis_title(FALSE) +
     yaxis_ticks(FALSE)
@@ -277,7 +275,6 @@ mcmc_neff_hist <- function(ratio, ..., binwidth = NULL) {
     scale_fill_diagnostic("neff") +
     labs(x = expression(N[eff]/N), y = NULL) +
     dont_expand_y_axis(c(0.005, 0)) +
-    theme_default() +
     yaxis_title(FALSE) +
     yaxis_text(FALSE) +
     yaxis_ticks(FALSE)
@@ -494,11 +491,10 @@ validate_neff_ratio <- function(ratio) {
            size = NULL) {
 
     style <- match.arg(style)
-    plot_data <- acf_data(
-      x = prepare_mcmc_array(x, pars, regex_pars),
-      lags = lags
-    )
-    if (dim(x)[2] > 1) { # multiple chains
+    x <- prepare_mcmc_array(x, pars, regex_pars)
+    plot_data <- acf_data(x = x, lags = lags)
+
+    if (num_chains(x) > 1) {
       facet_args$facets <- "Chain ~ Parameter"
       facet_fun <- "facet_grid"
     } else { # 1 chain
@@ -545,8 +541,7 @@ validate_neff_ratio <- function(ratio) {
         expand = c(0, 0)
       ) +
       labs(x = "Lag", y = "Autocorrelation") +
-      force_axes_in_facets() +
-      theme_default()
+      force_axes_in_facets()
   }
 
 # Prepare data for autocorr plot
@@ -554,10 +549,9 @@ validate_neff_ratio <- function(ratio) {
 # @param lags user's 'lags' argument
 acf_data <- function(x, lags) {
   stopifnot(is_mcmc_array(x))
-  dims <- dim(x)
-  n_iter <- dims[1]
-  n_chain <- dims[2]
-  n_param <- dims[3]
+  n_iter <- num_iters(x)
+  n_chain <- num_chains(x)
+  n_param <- num_params(x)
   n_lags <- lags + 1
   if (n_lags >= n_iter)
     stop("Too few iterations for lags=", lags, ".",

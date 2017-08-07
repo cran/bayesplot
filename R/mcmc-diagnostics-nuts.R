@@ -94,9 +94,9 @@
 #' @seealso
 #' \itemize{
 #' \item The \emph{Visual MCMC Diagnostics} vignette.
-#' \item Several other plotting functions in the \pkg{bayesplot}
-#' package that aren't NUTS-specific but take optional extra arguments
-#' if the model was fit using NUTS:
+#' \item Several other plotting functions in the \pkg{bayesplot} package that
+#' are not NUTS-specific but take optional extra arguments if the model was fit
+#' using NUTS:
 #' \itemize{
 #'  \item \code{\link{mcmc_trace}} will plot divergences on the traceplot if the
 #'  optional \code{divergences} argument is specified.
@@ -145,7 +145,7 @@ mcmc_nuts_acceptance <-
 
     x <- validate_nuts_data_frame(x, lp)
     n_chain <- length(unique(lp$Chain))
-    chain <- validate_enough_chains(chain, n_chain)
+    chain <- validate_enough_chains(chain, num_chains(x))
     overlay_chain <- !is.null(chain)
 
     accept_stat <- filter_(x, ~ Parameter == "accept_stat__")
@@ -184,7 +184,6 @@ mcmc_nuts_acceptance <-
     hists <- hists +
       dont_expand_y_axis(c(0.005, 0)) +
       facet_wrap(~ Parameter, scales = "free") +
-      theme_default() +
       yaxis_text(FALSE) +
       yaxis_title(FALSE) +
       yaxis_ticks(FALSE) +
@@ -198,8 +197,7 @@ mcmc_nuts_acceptance <-
         fill = get_color(ifelse(overlay_chain, "l", "m")),
         color = get_color(ifelse(overlay_chain, "lh", "mh"))
       ) +
-      labs(x = "accept_stat__", y = "lp__") +
-      theme_default()
+      labs(x = "accept_stat__", y = "lp__")
 
     if (overlay_chain) {
       hists <- hists +
@@ -245,8 +243,7 @@ mcmc_nuts_divergence <- function(x, lp, chain = NULL, ...) {
   check_ignored_arguments(...)
 
   x <- validate_nuts_data_frame(x, lp)
-  n_chain <- length(unique(lp$Chain))
-  chain <- validate_enough_chains(chain, n_chain)
+  chain <- validate_enough_chains(chain, num_chains(x))
   overlay_chain <- !is.null(chain)
 
   accept_stat <- filter_(x, ~ Parameter == "accept_stat__")
@@ -258,7 +255,6 @@ mcmc_nuts_divergence <- function(x, lp, chain = NULL, ...) {
   violin_lp <- ggplot(violin_lp_data, aes_(x = ~ Value, y = ~ lp)) +
     geom_violin(fill = get_color("l"), color = get_color("lh")) +
     ylab("lp__") +
-    theme_default() +
     xaxis_title(FALSE)
 
   violin_accept_stat_data <- data.frame(divergent, as = accept_stat$Value)
@@ -266,7 +262,6 @@ mcmc_nuts_divergence <- function(x, lp, chain = NULL, ...) {
     geom_violin(fill = get_color("l"), color = get_color("lh")) +
     ylab("accept_stat__") +
     scale_y_continuous(limits = c(NA, 1.05)) +
-    theme_default() +
     xaxis_title(FALSE)
 
   div_count_label <- paste(table(divergent$Value)[[2]], "divergences")
@@ -296,8 +291,7 @@ mcmc_nuts_stepsize <- function(x, lp, chain = NULL, ...) {
   check_ignored_arguments(...)
 
   x <- validate_nuts_data_frame(x, lp)
-  n_chain <- length(unique(lp$Chain))
-  chain <- validate_enough_chains(chain, n_chain)
+  chain <- validate_enough_chains(chain, num_chains(x))
   overlay_chain <- !is.null(chain)
 
   stepsize <- filter_(x, ~ Parameter == "stepsize__")
@@ -316,7 +310,6 @@ mcmc_nuts_stepsize <- function(x, lp, chain = NULL, ...) {
     geom_violin(fill = get_color("l"), color = get_color("lh")) +
     ylab("lp__") +
     stepsize_labels +
-    theme_default() +
     xaxis_title(FALSE)
 
   violin_accept_stat_data <-
@@ -327,7 +320,6 @@ mcmc_nuts_stepsize <- function(x, lp, chain = NULL, ...) {
     ylab("accept_stat__") +
     scale_y_continuous(limits = c(NA, 1.05)) +
     stepsize_labels +
-    theme_default() +
     xaxis_title(FALSE)
 
   if (!is.null(chain)) {
@@ -348,8 +340,7 @@ mcmc_nuts_treedepth <- function(x, lp, chain = NULL, ...) {
   check_ignored_arguments(...)
 
   x <- validate_nuts_data_frame(x, lp)
-  n_chain <- length(unique(lp$Chain))
-  chain <- validate_enough_chains(chain, n_chain)
+  chain <- validate_enough_chains(chain, num_chains(x))
   overlay_chain <- !is.null(chain)
 
   treedepth <- filter_(x, ~ Parameter == "treedepth__")
@@ -364,7 +355,6 @@ mcmc_nuts_treedepth <- function(x, lp, chain = NULL, ...) {
       binwidth = 1
     ) +
     xlab("treedepth__") +
-    theme_default() +
     yaxis_text(FALSE) +
     yaxis_title(FALSE) +
     yaxis_ticks(FALSE)
@@ -373,16 +363,14 @@ mcmc_nuts_treedepth <- function(x, lp, chain = NULL, ...) {
   violin_lp <-
     ggplot(violin_lp_data, aes_(x = ~ factor(Value), y = ~ lp)) +
     geom_violin(fill = get_color("l"), color = get_color("lh")) +
-    labs(x = "treedepth__", y = "lp__") +
-    theme_default()
+    labs(x = "treedepth__", y = "lp__")
 
   violin_accept_stat_data <- data.frame(treedepth, as = accept_stat$Value)
   violin_accept_stat <-
     ggplot(violin_accept_stat_data, aes_(x = ~ factor(Value), y = ~ as)) +
     geom_violin(fill = get_color("l"), color = get_color("lh")) +
     labs(x = "treedepth__", y = "accept_stat__") +
-    scale_y_continuous(breaks = c(0, 0.5, 1)) +
-    theme_default()
+    scale_y_continuous(breaks = c(0, 0.5, 1))
 
   if (overlay_chain) {
     hist_td <- hist_td +
@@ -479,7 +467,6 @@ mcmc_nuts_energy <-
       dont_expand_y_axis(c(0.005, 0)) +
       scale_x_continuous(expand = c(0.2, 0)) +
       labs(y = NULL, x = expression(E - bar(E))) +
-      theme_default() +
       space_legend_keys() +
       theme(legend.text = element_text(size = rel(1.1))) +
       yaxis_text(FALSE) +
@@ -531,8 +518,8 @@ validate_nuts_data_frame <- function(x, lp) {
         paste(valid_lp_cols, collapse = ", ")
       )
 
-    n_chain <- length(unique(x$Chain))
-    n_lp_chain <- length(unique(lp$Chain))
+    n_chain <- num_chains(x)
+    n_lp_chain <- num_chains(lp)
     if (n_chain != n_lp_chain)
       stop(
         "Number of chains for NUTS parameters is ", n_chain,

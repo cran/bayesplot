@@ -95,6 +95,7 @@ NULL
 #' @rdname MCMC-distributions
 #' @export
 #' @template args-hist
+#' @template args-hist-freq
 #'
 mcmc_hist <- function(x,
                       pars = character(),
@@ -102,7 +103,8 @@ mcmc_hist <- function(x,
                       transformations = list(),
                       facet_args = list(),
                       ...,
-                      binwidth = NULL) {
+                      binwidth = NULL,
+                      freq = TRUE) {
   check_ignored_arguments(...)
   .mcmc_hist(
     x,
@@ -112,6 +114,7 @@ mcmc_hist <- function(x,
     facet_args = facet_args,
     binwidth = binwidth,
     by_chain = FALSE,
+    freq = freq,
     ...
   )
 }
@@ -147,7 +150,8 @@ mcmc_hist_by_chain <- function(x,
                                transformations = list(),
                                facet_args = list(),
                                ...,
-                               binwidth = NULL) {
+                               binwidth = NULL,
+                               freq = TRUE) {
   check_ignored_arguments(...)
   .mcmc_hist(
     x,
@@ -157,6 +161,7 @@ mcmc_hist_by_chain <- function(x,
     facet_args = facet_args,
     binwidth = binwidth,
     by_chain = TRUE,
+    freq = freq,
     ...
   )
 }
@@ -216,13 +221,16 @@ mcmc_violin <- function(x,
                       facet_args = list(),
                       binwidth = NULL,
                       by_chain = FALSE,
+                      freq = TRUE,
                       ...) {
   x <- prepare_mcmc_array(x, pars, regex_pars, transformations)
   if (by_chain && !has_multiple_chains(x))
     STOP_need_multiple_chains()
 
-  data <- reshape2::melt(x, value.name = "Value")
-  graph <- ggplot(data, aes_(x = ~ Value, y = ~..density..)) +
+  data <- reshape2::melt(x, value.name = "value")
+  n_param <- num_params(data)
+
+  graph <- ggplot(data, set_hist_aes(freq)) +
     geom_histogram(
       fill = get_color("mid"),
       color = get_color("mid_highlight"),
@@ -234,21 +242,27 @@ mcmc_violin <- function(x,
   if (is.null(facet_args[["scales"]]))
     facet_args[["scales"]] <- "free"
   if (!by_chain) {
-    facet_args[["facets"]] <- ~ Parameter
-    graph <- graph + do.call("facet_wrap", facet_args)
+    if (n_param > 1) {
+      facet_args[["facets"]] <- ~ Parameter
+      graph <- graph + do.call("facet_wrap", facet_args)
+    }
   } else {
-    facet_args[["facets"]] <- Chain ~ Parameter
+    facet_args[["facets"]] <- if (n_param > 1)
+      "Chain ~ Parameter" else "Chain ~ ."
     graph <- graph +
       do.call("facet_grid", facet_args) +
       force_axes_in_facets()
   }
+
+  if (n_param == 1)
+    graph <- graph + xlab(levels(data$Parameter))
+
   graph +
     dont_expand_y_axis(c(0.005, 0)) +
-    theme_default() +
     yaxis_text(FALSE) +
     yaxis_title(FALSE) +
     yaxis_ticks(FALSE) +
-    xaxis_title(FALSE)
+    xaxis_title(on = n_param == 1)
 }
 
 .mcmc_dens <- function(x,
@@ -264,6 +278,7 @@ mcmc_violin <- function(x,
   x <- prepare_mcmc_array(x, pars, regex_pars, transformations)
   data <- reshape2::melt(x, value.name = "Value")
   data$Chain <- factor(data$Chain)
+  n_param <- num_params(data)
 
   geom <- match.arg(geom)
   violin <- geom == "violin"
@@ -274,7 +289,7 @@ mcmc_violin <- function(x,
     if (!has_multiple_chains(x))
       STOP_need_multiple_chains()
     else
-      n_chain <- length(unique(data$Chain))
+      n_chain <- num_chains(data)
   }
 
   aes_mapping <- if (violin) {
@@ -306,16 +321,24 @@ mcmc_violin <- function(x,
     graph <- graph + dont_expand_x_axis()
   if (by_chain)
     graph <- graph + scale_color_manual(values = chain_colors(n_chain))
-  if (is.null(facet_args[["scales"]]))
-    facet_args[["scales"]] <- "free"
 
-  facet_args[["facets"]] <- ~ Parameter
+  if (n_param == 1) {
+    graph <-
+      graph +
+      labs(x = if (violin) "Chain" else levels(data$Parameter),
+           y = if (violin) levels(data$Parameter) else NULL)
+  } else {
+    facet_args[["facets"]] <- ~ Parameter
+    if (is.null(facet_args[["scales"]]))
+      facet_args[["scales"]] <- "free"
+    graph <- graph + do.call("facet_wrap", facet_args)
+  }
+
+
   graph +
-    do.call("facet_wrap", facet_args) +
     dont_expand_y_axis(c(0.005, 0)) +
-    theme_default() +
     yaxis_text(FALSE) +
-    yaxis_title(FALSE) +
     yaxis_ticks(FALSE) +
-    xaxis_title(FALSE)
+    yaxis_title(on = n_param == 1 && violin) +
+    xaxis_title(on = n_param == 1)
 }
