@@ -28,6 +28,10 @@ formats:
  contains the chain number (an integer) corresponding to each row in
  the data frame.
 }
+\strong{Note}: typically the user should \emph{not} include warmup iterations
+in the object passed to \pkg{bayesplot} plotting functions, although for
+certain plots (e.g. trace plots) it can occasionally be useful to include the
+warmup iterations for diagnostic purposes.
 }
 \section{MCMC plotting functions}{
 
@@ -40,17 +44,21 @@ formats:
   \item{\strong{\link[=MCMC-intervals]{Uncertainty intervals}}}{
     Uncertainty intervals computed from parameter draws.
   }
-  \item{\strong{\link[=MCMC-traces]{Traceplots}}}{
+  \item{\strong{\link[=MCMC-traces]{Trace plots}}}{
     Times series of parameter draws.
   }
   \item{\strong{\link[=MCMC-scatterplots]{Scatterplots}}}{
     Scatterplots, heatmaps, and pairs plots of parameter draws.
   }
   \item{\strong{\link[=MCMC-combos]{Combinations}}}{
-    Combination plots (e.g. traceplot + histogram).
+    Combination plots (e.g. trace plot + histogram).
+  }
+  \item{\strong{\link[=MCMC-diagnostics]{General MCMC diagnostics}}}{
+    MCMC diagnostic plots including Rhat, effective sample size,
+    autocorrelation.
   }
   \item{\strong{\link[=MCMC-nuts]{NUTS diagnostics}}}{
-    Diagnostic plots for the No-U-Turn Sampler.
+    Special diagnostic plots for the No-U-Turn Sampler.
   }
   \item{\strong{\link[=MCMC-recover]{Comparisons to "true" values}}}{
     Plots comparing MCMC estimates to "true" parameter values (e.g.,
@@ -59,12 +67,17 @@ formats:
 }
 }
 
+\references{
+Gabry, J., Simpson, D., Vehtari, A., Betancourt, M., Gelman, A.
+  (2017). Visualization in Bayesian workflow. arXiv preprint
+  \href{https://arxiv.org/abs/1709.01449}{arvix:1709.01449}.
+}
 \seealso{
 Other MCMC: \code{\link{MCMC-combos}},
   \code{\link{MCMC-diagnostics}},
   \code{\link{MCMC-distributions}},
   \code{\link{MCMC-intervals}}, \code{\link{MCMC-nuts}},
-  \code{\link{MCMC-recover}},
+  \code{\link{MCMC-parcoord}}, \code{\link{MCMC-recover}},
   \code{\link{MCMC-scatterplots}},
   \code{\link{MCMC-traces}}
 }
