@@ -25,8 +25,8 @@ test_that("rhat and neff plots return a ggplot object", {
 
 test_that("rhat and neff plot functions throw correct errors & warnings", {
   # need vector or 1D array
-  expect_error(mcmc_rhat_hist(cbind(1:2)), "vector_or_1Darray")
-  expect_error(mcmc_neff_hist(list(1,2)), "vector_or_1Darray")
+  expect_error(mcmc_rhat_hist(cbind(1:2)), "is.array")
+  expect_error(mcmc_neff_hist(list(1,2)), "is.numeric")
 
   # need positive rhat values
   expect_error(mcmc_rhat(c(-1, 1, 1)), "must be positive")
@@ -72,3 +72,53 @@ test_that("mcmc_acf & mcmc_acf_bar throw correct errors", {
                regexp = "Too few iterations for lags=200")
 })
 
+
+
+
+# Visual tests -----------------------------------------------------------------
+
+test_that("mcmc_rhat renders correctly", {
+  testthat::skip_on_cran()
+
+  rhats <- seq(from = 1, to = 1.20, length = 10)
+
+  p_base <- mcmc_rhat(rhats)
+  vdiffr::expect_doppelganger("mcmc rhat (default)", p_base)
+
+  p_size <- mcmc_rhat(rhats, size = 3)
+  vdiffr::expect_doppelganger("mcmc rhat (sized)", p_size)
+})
+
+test_that("mcmc_rhat_hist renders correctly", {
+  testthat::skip_on_cran()
+
+  rhats <- seq(from = 1, to = 1.20, length = 10)
+
+  p_base <- mcmc_rhat_hist(rhats)
+  vdiffr::expect_doppelganger("mcmc rhat hist (default)", p_base)
+
+  p_binwidth <- mcmc_rhat_hist(rhats, binwidth = .02)
+  vdiffr::expect_doppelganger("mcmc rhat hist (binwidth)", p_binwidth)
+})
+
+
+test_that("mcmc_neff renders correctly", {
+  testthat::skip_on_cran()
+
+  neffs <- seq(from = 0, to = 1, length = 20)
+
+  p_base <- mcmc_neff(neffs)
+  vdiffr::expect_doppelganger("mcmc neff (default)", p_base)
+})
+
+test_that("mcmc_neff_hist renders correctly", {
+  testthat::skip_on_cran()
+
+  neffs <- seq(from = 0, to = 1, length = 20)
+
+  p_base <- mcmc_neff_hist(neffs)
+  vdiffr::expect_doppelganger("mcmc neff hist (default)", p_base)
+
+  p_binwidth <- mcmc_neff_hist(neffs, binwidth = .05)
+  vdiffr::expect_doppelganger("mcmc neff hist (binwidth)", p_binwidth)
+})
