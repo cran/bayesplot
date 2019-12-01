@@ -43,7 +43,7 @@
 #'    and `np_style` arguments can be used to add additional information in
 #'    the plot (in this case the approximate location of divergences).
 #'    For more on why the scatter plot with divergences is a useful
-#'    diagnostic tool see [Gabry et al. (2019)](https://github.com/jgabry/bayes-vis-paper).
+#'    diagnostic tool see [Gabry et al. (2019)](https://github.com/jgabry/bayes-vis-paper#readme).
 #'   }
 #'   \item{`mcmc_hex()`}{
 #'    Hexagonal heatmap of 2-D bin counts. This plot is useful in cases where
@@ -220,17 +220,17 @@ mcmc_hex <- function(x,
 #'
 #' # pairs plots
 #' # default of condition=NULL implies splitting chains between upper and lower panels
-#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\[[1,4]\\]",
+#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\\[[1,4]\\\]",
 #'            off_diag_args = list(size = 1, alpha = 0.5))
 #'
 #' # change to density plots instead of histograms and hex plots instead of
 #' # scatterplots
-#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\[[1,4]\\]",
+#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\\[[1,4]\\\]",
 #'            diag_fun = "dens", off_diag_fun = "hex")
 #'
 #' # plot chain 1 above diagonal and chains 2, 3, and 4 below
 #' color_scheme_set("brightblue")
-#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\[[1,4]\\]",
+#' mcmc_pairs(x, pars = "alpha", regex_pars = "beta\\\[[1,4]\\\]",
 #'            diag_fun = "dens", off_diag_fun = "hex",
 #'            condition = pairs_condition(chains = list(1, 2:4)))
 #' }

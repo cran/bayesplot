@@ -110,7 +110,7 @@
 #' color_scheme_set("purple")
 #' p <- mcmc_trace(
 #'   x,
-#'   regex_pars = "beta\\[[1,3]\\]",
+#'   regex_pars = "beta\\\[[1,3]\\\]",
 #'   facet_args = list(labeller = ggplot2::label_parsed)
 #' )
 #' p + facet_text(size = 15)
@@ -143,15 +143,6 @@
 #'   facet_args = list(nrow = 2),
 #'   np = nuts_params(fit),
 #'   np_style = trace_style_np(div_color = "black", div_size = 0.5)
-#' )
-#'
-#' mcmc_trace(
-#'   posterior,
-#'   pars = c("wt", "sigma"),
-#'   size = 0.8,
-#'   facet_args = list(nrow = 2),
-#'   divergences = nuts_params(fit),
-#'   div_color = "black"
 #' )
 #' }
 #'
