@@ -1,8 +1,8 @@
 Package: bayesplot
 Type: Package
 Title: Plotting for Bayesian Models
-Version: 1.9.0
-Date: 2022-03-09
+Version: 1.10.0
+Date: 2022-11-16
 Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jsg2201@columbia.edu"),
              person("Tristan", "Mahr", role = "aut"),
              person("Paul-Christian", "Bürkner", role = "ctb"),
@@ -10,6 +10,7 @@ Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jsg2201@c
              person("Malcolm", "Barrett", role = "ctb"),
              person("Frank", "Weber", role = "ctb"),
              person("Eduardo", "Coronado Sroka", role = "ctb"),
+             person("Teemu", "Sailynoja", role = "ctb"),
              person("Aki", "Vehtari", role = "ctb"))
 Maintainer: Jonah Gabry <jsg2201@columbia.edu>
 Description: Plotting functions for posterior analysis, MCMC diagnostics,
@@ -33,11 +34,11 @@ Suggests: ggfortify, gridExtra (>= 2.2.1), hexbin, knitr (>= 1.16), loo
         2.17.1), rstanarm (>= 2.17.4), rstantools (>= 1.5.0), scales,
         shinystan (>= 2.3.0), survival, testthat (>= 2.0.0), vdiffr (>=
         1.0.2)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.2
 VignetteBuilder: knitr
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2022-03-09 22:27:01 UTC; jgabry
+Packaged: 2022-11-16 19:38:57 UTC; jgabry
 Author: Jonah Gabry [aut, cre],
   Tristan Mahr [aut],
   Paul-Christian Bürkner [ctb],
@@ -45,6 +46,7 @@ Author: Jonah Gabry [aut, cre],
   Malcolm Barrett [ctb],
   Frank Weber [ctb],
   Eduardo Coronado Sroka [ctb],
+  Teemu Sailynoja [ctb],
   Aki Vehtari [ctb]
 Repository: CRAN
-Date/Publication: 2022-03-10 11:20:23 UTC
+Date/Publication: 2022-11-16 22:00:08 UTC

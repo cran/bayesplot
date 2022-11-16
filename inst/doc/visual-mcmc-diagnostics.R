@@ -21,6 +21,7 @@ library("ggplot2")
 library("rstan")
 library("dplyr") #Used only for consistency checks
 rstan_options(auto_write = TRUE) #Helpful throughout development
+bayesplot_theme_set()
 
 ## ----setup, eval=FALSE--------------------------------------------------------
 #  library("bayesplot")
