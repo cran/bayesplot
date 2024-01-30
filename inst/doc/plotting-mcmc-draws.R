@@ -1,7 +1,7 @@
 params <-
 list(EVAL = TRUE)
 
-## ---- SETTINGS-knitr, include=FALSE-------------------------------------------
+## ----SETTINGS-knitr, include=FALSE--------------------------------------------
 stopifnot(require("knitr"))
 library("bayesplot")
 knitr::opts_chunk$set(
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 library("ggplot2")
 library("rstanarm")
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library("bayesplot")
 #  library("ggplot2")
 #  library("rstanarm")
@@ -27,7 +27,7 @@ library("rstanarm")
 ## ----mtcars-------------------------------------------------------------------
 head(mtcars) # see help("mtcars")
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  # linear regression model using stan_glm
 #  # using '~ .' to include all variables
 #  fit <- stan_glm(mpg ~ ., data = mtcars, seed = 1111)

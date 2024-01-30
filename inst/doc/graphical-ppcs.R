@@ -1,7 +1,7 @@
 params <-
 list(EVAL = TRUE)
 
-## ---- SETTINGS-knitr, include=FALSE-------------------------------------------
+## ----SETTINGS-knitr, include=FALSE--------------------------------------------
 stopifnot(require("knitr"))
 library("bayesplot")
 knitr::opts_chunk$set(
@@ -20,7 +20,7 @@ library("ggplot2")
 library("rstanarm")
 set.seed(840)
 
-## ---- eval=FALSE--------------------------------------------------------------
+## ----eval=FALSE---------------------------------------------------------------
 #  library("bayesplot")
 #  library("ggplot2")
 #  library("rstanarm")

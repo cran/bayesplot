@@ -194,9 +194,11 @@ of rank-normalized MCMC samples. Defaults to \code{20}.}
 average number of ranks per bin. Defaults to \code{FALSE}.}
 
 \item{K}{An optional integer defining the number of equally spaced evaluation
-points for the ECDF. If the submitted PIT values are known to be discrete,
-this should be the number of the discrete cases. Defaults to the smaller of
-\code{length(y)} and \code{ncol(yrep)} when applicable.}
+points for the ECDF. Reducing K when using \code{interpolate_adj = FALSE} makes
+computing the confidence bands faster. For \code{ppc_pit_ecdf} and
+\code{ppc_pit_ecdf_grouped}, defaults to \code{ncol(yrep) + 1}, or \code{length(pit)} if PIT
+values are supplied. For \code{mcmc_rank_ecdf} defaults to the number of
+iterations per chain in \code{x}.}
 
 \item{prob}{For \code{mcmc_rank_ecdf()}, a value between 0 and 1
 specifying the desired simultaneous confidence of the confidence bands to be
@@ -308,7 +310,7 @@ mcmc_rank_ecdf(x, prob = 0.99, plot_diff = TRUE)
 color_scheme_set("purple")
 p <- mcmc_trace(
   x,
-  regex_pars = "beta\\\\\[[1,3]\\\\\]",
+  regex_pars = "beta\\\\[[1,3]\\\\]",
   facet_args = list(labeller = ggplot2::label_parsed)
 )
 p + facet_text(size = 15)

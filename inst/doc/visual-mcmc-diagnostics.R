@@ -1,7 +1,7 @@
 params <-
 list(EVAL = TRUE)
 
-## ---- SETTINGS-knitr, include=FALSE-------------------------------------------
+## ----SETTINGS-knitr, include=FALSE--------------------------------------------
 stopifnot(require("knitr"))
 library("bayesplot")
 knitr::opts_chunk$set(
@@ -40,7 +40,7 @@ schools_dat <- list(
 #  schools_mod_ncp <- stan_model("schools_mod_ncp.stan")
 
 ## ----fit-models-hidden, results='hide', message=FALSE-------------------------
-fit_cp <- sampling(schools_mod_cp, data = schools_dat, seed = 803214053, control = list(adapt_delta = 0.9))
+fit_cp <- sampling(schools_mod_cp, data = schools_dat, seed = 803214055, control = list(adapt_delta = 0.9))
 fit_ncp <- sampling(schools_mod_ncp, data = schools_dat, seed = 457721433, control = list(adapt_delta = 0.9))
 
 ## ----extract-draws------------------------------------------------------------
