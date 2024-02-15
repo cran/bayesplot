@@ -1,8 +1,8 @@
 Package: bayesplot
 Type: Package
 Title: Plotting for Bayesian Models
-Version: 1.11.0
-Date: 2024-01-30
+Version: 1.11.1
+Date: 2024-02-14
 Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jsg2201@columbia.edu"),
              person("Tristan", "Mahr", role = "aut"),
              person("Paul-Christian", "Bürkner", role = "ctb"),
@@ -38,7 +38,7 @@ RoxygenNote: 7.3.0
 VignetteBuilder: knitr
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2024-01-30 21:57:22 UTC; jgabry
+Packaged: 2024-02-14 20:46:03 UTC; jgabry
 Author: Jonah Gabry [aut, cre],
   Tristan Mahr [aut],
   Paul-Christian Bürkner [ctb],
@@ -49,4 +49,4 @@ Author: Jonah Gabry [aut, cre],
   Teemu Sailynoja [ctb],
   Aki Vehtari [ctb]
 Repository: CRAN
-Date/Publication: 2024-01-30 23:10:06 UTC
+Date/Publication: 2024-02-15 05:30:11 UTC

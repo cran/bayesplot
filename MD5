@@ -1,6 +1,6 @@
-884a99a8c96654adca2ec29f292c5a58 *DESCRIPTION
+2034f869f109067bca590a771e464a19 *DESCRIPTION
 6f42fa21ae19ab73ffcd04d6af30a7fa *NAMESPACE
-c1e22460df71317d410699fad3d96c5d *NEWS.md
+0a121c326c4853ea17d0c3edcccbeb79 *NEWS.md
 90da8fc8f7b583b12d57ab6ab49c9ba6 *R/available-module-functions.R
 137886fcefa034d4f591ca49049089dc *R/bayesplot-colors.R
 6e087c38b6633b69333a9eb469bb322d *R/bayesplot-extractors.R
@@ -11,7 +11,7 @@ c8d28590d974475e60dfb61b039beb94 *R/bayesplot-ggplot-themes.R
 6bcdea221e46f2306ffc2308b436acc8 *R/example-data.R
 efa383d7f4c8c7fc705bb8c1ce7e62ed *R/helpers-gg.R
 8b954d0dce42d53af3cd06e03a2ab278 *R/helpers-mcmc.R
-5b875df56cf8a2738ceabc1aba6d1e69 *R/helpers-ppc.R
+5d321e6c385d0d299e76d9dc821e9187 *R/helpers-ppc.R
 23f9e411a79cb2c30900d33007b2c047 *R/helpers-shared.R
 499bc1e007b15686d0aaf92f63300dff *R/helpers-testthat.R
 b2bc8848b8b0ddf52889f0d7aae43c6e *R/mcmc-combo.R
@@ -27,7 +27,7 @@ cb585c9af45b1c0b3f2db803da25375d *R/mcmc-intervals.R
 b876b4737232996e5e8243e9dc5756a2 *R/pp_check.R
 6dddf00096db85d7e95679927cebea72 *R/ppc-censoring.R
 17dd9ad47731aa54236bbe84449fa665 *R/ppc-discrete.R
-1a2666de8da76643549f85f92a86f027 *R/ppc-distributions.R
+9d25569a33361cf2c6fc5cc62b96c485 *R/ppc-distributions.R
 8f9e22325535de0a450ae6d522b65ae1 *R/ppc-errors.R
 585486b4ae6d8a3af927d36e163de936 *R/ppc-intervals.R
 cc15786eac79a8559d9b8069c4888d40 *R/ppc-loo.R
@@ -45,13 +45,13 @@ f849014020d5b2ab4dbf5703b440c05d *build/vignette.rds
 9e6d152f3d8a2abccbae64c3895def95 *inst/CITATION
 5f0cc4c76428bbc7bd0324c1f3a294a1 *inst/doc/graphical-ppcs.R
 df950c456c457be19258b064464b6aa5 *inst/doc/graphical-ppcs.Rmd
-8c9ed7dba719fe25fca88a47652911e8 *inst/doc/graphical-ppcs.html
+3742841ce1cdac07b8966c9da628f178 *inst/doc/graphical-ppcs.html
 20756615ddcc36c7e384ce729387dbb6 *inst/doc/plotting-mcmc-draws.R
 db5e3fb13cb998d40045bea97a3bbc17 *inst/doc/plotting-mcmc-draws.Rmd
-cc76dd26fbdaa80dd92de66ac56ca37f *inst/doc/plotting-mcmc-draws.html
+dc4d889dc5743179d827cd7df71dd972 *inst/doc/plotting-mcmc-draws.html
 cc840186713ca634836b3f5d5ec5c9b3 *inst/doc/visual-mcmc-diagnostics.R
 3e539e648fa798009c7cd437f23e487c *inst/doc/visual-mcmc-diagnostics.Rmd
-5842271229e201c709085e66a1e3ffac *inst/doc/visual-mcmc-diagnostics.html
+3ad2736e500ff22e1da949165bc22fa7 *inst/doc/visual-mcmc-diagnostics.html
 7f22939057bbe3d14f7f80adbff07791 *man/MCMC-combos.Rd
 3f17671ece40b1c67432bd35877c9b6e *man/MCMC-diagnostics.Rd
 3d368d350fbc98d22d5635839727df01 *man/MCMC-distributions.Rd
@@ -61,10 +61,10 @@ a665eed088a505fc6bf4266077e9c46a *man/MCMC-intervals.Rd
 8db7bd71196761df264cb1c2105e72d0 *man/MCMC-parcoord.Rd
 8dd9982293f1587de7b410e3fc749799 *man/MCMC-recover.Rd
 a52b134735218f36bceff2d773d7fa24 *man/MCMC-scatterplots.Rd
-418bc9969800f6ae68225f9245a2f0c3 *man/MCMC-traces.Rd
+61db53c35c9d28167cc33e74157a2eb4 *man/MCMC-traces.Rd
 a36523ec3123935a317e13c5b2df668d *man/PPC-censoring.Rd
 c7c93463e36fab5b59afca9c2ef30d0d *man/PPC-discrete.Rd
-b73a4ffbe2b3219abafe4396ec696048 *man/PPC-distributions.Rd
+888e61584f1a06dc603440263ab2a9b0 *man/PPC-distributions.Rd
 778e53da3b0a488bdbd4bade84f2d356 *man/PPC-errors.Rd
 890ff889a4c3b9d4dd0ab20d6b16063f *man/PPC-intervals.Rd
 3ebb7bc56bb880d8523bab6c29f193bc *man/PPC-loo.Rd
