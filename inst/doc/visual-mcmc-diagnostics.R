@@ -24,9 +24,9 @@ rstan_options(auto_write = TRUE) #Helpful throughout development
 bayesplot_theme_set()
 
 ## ----setup, eval=FALSE--------------------------------------------------------
-#  library("bayesplot")
-#  library("ggplot2")
-#  library("rstan")
+# library("bayesplot")
+# library("ggplot2")
+# library("rstan")
 
 ## ----schools_dat--------------------------------------------------------------
 schools_dat <- list(
@@ -36,8 +36,8 @@ schools_dat <- list(
 )
 
 ## ----compile-models, eval=FALSE-----------------------------------------------
-#  schools_mod_cp <- stan_model("schools_mod_cp.stan")
-#  schools_mod_ncp <- stan_model("schools_mod_ncp.stan")
+# schools_mod_cp <- stan_model("schools_mod_cp.stan")
+# schools_mod_ncp <- stan_model("schools_mod_ncp.stan")
 
 ## ----fit-models-hidden, results='hide', message=FALSE-------------------------
 fit_cp <- sampling(schools_mod_cp, data = schools_dat, seed = 803214055, control = list(adapt_delta = 0.9))
@@ -76,13 +76,17 @@ if(n_divergent_ncp > 0) {
 }
 
 
-## ----mcmc_parcoord-1----------------------------------------------------------
-color_scheme_set("darkgray")
-mcmc_parcoord(posterior_cp, np = np_cp)
+## ----mcmc_parcoord-1, eval=FALSE----------------------------------------------
+# # not evaluated to reduce vignette size for CRAN
+# # full version available at mc-stan.org/bayesplot/articles
+# color_scheme_set("darkgray")
+# mcmc_parcoord(posterior_cp, np = np_cp)
 
-## ----mcmc_pairs---------------------------------------------------------------
-mcmc_pairs(posterior_cp, np = np_cp, pars = c("mu","tau","theta[1]"),
-           off_diag_args = list(size = 0.75))
+## ----mcmc_pairs, eval=FALSE---------------------------------------------------
+# # not evaluated to reduce vignette size for CRAN
+# # full version available at mc-stan.org/bayesplot/articles
+# mcmc_pairs(posterior_cp, np = np_cp, pars = c("mu","tau","theta[1]"),
+#            off_diag_args = list(size = 0.75))
 
 ## ----mcmc_scatter-1-----------------------------------------------------------
 # assign to an object so we can reuse later
@@ -137,7 +141,7 @@ mcmc_trace(posterior_cp, pars = "tau", np = np_cp) +
 
 ## ----echo=FALSE---------------------------------------------------------------
 #A check that the chosen window still relevant
-n_divergent_in_window <- np_cp %>% filter(Parameter == "divergent__" & Value == 1 & Iteration >= 300 & Iteration <= 500) %>% nrow()
+n_divergent_in_window <- np_cp %>% filter(Parameter == "divergent__" & Value == 1 & Iteration >= 400 & Iteration <= 600) %>% nrow()
 
 if(n_divergent_in_window < 6) {
   divergences <- np_cp %>% filter(Parameter == "divergent__" & Value == 1) %>% select(Iteration) %>% get("Iteration", .) %>% sort() %>% paste(collapse = ",")
@@ -145,7 +149,7 @@ if(n_divergent_in_window < 6) {
 }
 
 ## ----mcmc_trace_zoom----------------------------------------------------------
-mcmc_trace(posterior_cp, pars = "tau", np = np_cp, window = c(300,500)) + 
+mcmc_trace(posterior_cp, pars = "tau", np = np_cp, window = c(200,400)) + 
   xlab("Post-warmup iteration")
 
 ## ----mcmc_nuts_divergence-----------------------------------------------------

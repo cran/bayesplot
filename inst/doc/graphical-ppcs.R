@@ -21,9 +21,9 @@ library("rstanarm")
 set.seed(840)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library("bayesplot")
-#  library("ggplot2")
-#  library("rstanarm")
+# library("bayesplot")
+# library("ggplot2")
+# library("rstanarm")
 
 ## ----roaches-data-------------------------------------------------------------
 head(roaches) # see help("rstanarm-datasets")

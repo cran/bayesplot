@@ -20,18 +20,18 @@ library("ggplot2")
 library("rstanarm")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  library("bayesplot")
-#  library("ggplot2")
-#  library("rstanarm")
+# library("bayesplot")
+# library("ggplot2")
+# library("rstanarm")
 
 ## ----mtcars-------------------------------------------------------------------
 head(mtcars) # see help("mtcars")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  # linear regression model using stan_glm
-#  # using '~ .' to include all variables
-#  fit <- stan_glm(mpg ~ ., data = mtcars, seed = 1111)
-#  print(fit)
+# # linear regression model using stan_glm
+# # using '~ .' to include all variables
+# fit <- stan_glm(mpg ~ ., data = mtcars, seed = 1111)
+# print(fit)
 
 ## ----stan_glm, include=FALSE--------------------------------------------------
 fit <- stan_glm(mpg ~ ., data = mtcars, QR = TRUE, seed = 1111)
@@ -61,10 +61,12 @@ mcmc_areas(
 color_scheme_set("green")
 mcmc_hist(posterior, pars = c("wt", "sigma"))
 
-## ----mcmc_hist-transform, message=FALSE---------------------------------------
-color_scheme_set("blue")
-mcmc_hist(posterior, pars = c("wt", "sigma"),
-          transformations = list("sigma" = "log"))
+## ----mcmc_hist-transform, message=FALSE, eval=FALSE---------------------------
+# # not evaluated to reduce vignette size for CRAN
+# # full version available at mc-stan.org/bayesplot/articles
+# color_scheme_set("blue")
+# mcmc_hist(posterior, pars = c("wt", "sigma"),
+#           transformations = list("sigma" = "log"))
 
 ## ----mcmc_hist_by_chain, message=FALSE----------------------------------------
 color_scheme_set("brightblue")
@@ -92,10 +94,12 @@ if (requireNamespace("hexbin", quietly = TRUE)) {
   mcmc_hex(posterior, pars = c("(Intercept)", "wt"))
 }
 
-## ----mcmc_pairs, message=FALSE------------------------------------------------
-color_scheme_set("pink")
-mcmc_pairs(posterior, pars = c("(Intercept)", "wt", "sigma"),
-           off_diag_args = list(size = 1.5))
+## ----mcmc_pairs, message=FALSE, eval=FALSE------------------------------------
+# # not evaluated to reduce vignette size for CRAN
+# # full version available at mc-stan.org/bayesplot/articles
+# color_scheme_set("pink")
+# mcmc_pairs(posterior, pars = c("(Intercept)", "wt", "sigma"),
+#            off_diag_args = list(size = 1.5))
 
 ## ----mcmc_trace---------------------------------------------------------------
 color_scheme_set("blue")
@@ -107,8 +111,8 @@ mcmc_trace(posterior, pars = c("wt", "sigma"),
            facet_args = list(ncol = 1, strip.position = "left"))
 
 ## ----viridis-scheme, eval=FALSE-----------------------------------------------
-#  color_scheme_set("viridis")
-#  mcmc_trace(posterior, pars = "(Intercept)")
+# color_scheme_set("viridis")
+# mcmc_trace(posterior, pars = "(Intercept)")
 
 ## ----mcmc_trace_highlight-----------------------------------------------------
 mcmc_trace_highlight(posterior, pars = "sigma", highlight = 3)
