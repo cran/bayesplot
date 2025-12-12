@@ -1,6 +1,3 @@
-library(bayesplot)
-context("MCMC: scatter, hex, and parallel coordinates plots")
-
 source(test_path("data-for-mcmc-tests.R"))
 
 if (requireNamespace("rstanarm", quietly = TRUE)) {
@@ -17,6 +14,7 @@ if (requireNamespace("rstanarm", quietly = TRUE)) {
 test_that("mcmc_scatter returns a ggplot object", {
   expect_gg(mcmc_scatter(arr, pars = c("beta[1]", "beta[2]")))
   expect_gg(mcmc_scatter(arr1chain, regex_pars = "beta", size = 3, alpha = 0.5))
+  expect_gg(mcmc_scatter(arr1chain, regex_pars = "beta", shape = 23, size = 3, alpha = 0.5))
   expect_gg(mcmc_scatter(drawsarr, pars = c("theta[1]", "theta[2]")))
   expect_gg(mcmc_scatter(mat, pars = c("sigma", "(Intercept)")))
   expect_gg(mcmc_scatter(dframe, regex_pars = "x:[2,4]"))
@@ -212,40 +210,40 @@ test_that("pairs_condition returns correct structure", {
   # default
   cond0 <- pairs_condition()
   expect_s3_class(cond0, "pairs_condition")
-  expect_equivalent(unclass(cond0), list())
+  expect_equal(unclass(cond0), list(), ignore_attr = TRUE)
   expect_equal(attr(cond0, "type"), "default")
 
   # chains
   cond1 <- pairs_condition(chains = 1:4)
   expect_s3_class(cond1, "integer")
   expect_s3_class(cond1, "pairs_condition")
-  expect_equivalent(unclass(cond1), 1:4)
+  expect_equal(unclass(cond1), 1:4, ignore_attr = TRUE)
   expect_equal(attr(cond1, "type"), "chain_vector")
 
   cond2 <- pairs_condition(chains = list(1:4, 5:6))
   expect_s3_class(cond2, "list")
   expect_s3_class(cond2, "pairs_condition")
-  expect_equivalent(unclass(cond2), list(upper=1:4, lower=5:6))
+  expect_equal(unclass(cond2), list(upper=1:4, lower=5:6), ignore_attr = TRUE)
   expect_equal(attr(cond2, "type"), "chain_list")
 
   # draws
   cond3 <- pairs_condition(draws = 0.7)
   expect_s3_class(cond3, "numeric")
   expect_s3_class(cond3, "pairs_condition")
-  expect_equivalent(unclass(cond3), 0.7)
+  expect_equal(unclass(cond3), 0.7, ignore_attr = TRUE)
   expect_equal(attr(cond3, "type"), "draws_proportion")
 
   cond4 <- pairs_condition(draws = c(T, F, T))
   expect_s3_class(cond4, "logical")
   expect_s3_class(cond4, "pairs_condition")
-  expect_equivalent(unclass(cond4), c(T, F, T))
+  expect_equal(unclass(cond4), c(T, F, T), ignore_attr = TRUE)
   expect_equal(attr(cond4, "type"), "draws_selection")
 
   # nuts
   cond5 <- pairs_condition(nuts = "lp__")
   expect_s3_class(cond5, "character")
   expect_s3_class(cond5, "pairs_condition")
-  expect_equivalent(unclass(cond5), "lp__")
+  expect_equal(unclass(cond5), "lp__", ignore_attr = TRUE)
   expect_equal(attr(cond5, "type"), "nuts")
 })
 
@@ -386,6 +384,14 @@ test_that("mcmc_scatter renders correctly", {
     alpha = 0.2
   )
   vdiffr::expect_doppelganger("mcmc_scatter (size, alpha)", p_custom)
+
+  p_custom_shape <- mcmc_scatter(
+    vdiff_dframe_chains,
+    shape = 3,
+    size = 2,
+    alpha = 0.2
+  )
+  vdiffr::expect_doppelganger("mcmc_scatter (shape, size, alpha)", p_custom_shape)
 
   p_divergences <- mcmc_scatter(
     vdiff_dframe_chains,

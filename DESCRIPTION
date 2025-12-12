@@ -1,9 +1,9 @@
 Package: bayesplot
 Type: Package
 Title: Plotting for Bayesian Models
-Version: 1.14.0
-Date: 2025-08-31
-Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jsg2201@columbia.edu"),
+Version: 1.15.0
+Date: 2025-12-11
+Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jgabry@gmail.com"),
              person("Tristan", "Mahr", role = "aut", comment = c(ORCID = "0000-0002-8890-5116")),
              person("Paul-Christian", "Bürkner", role = "ctb"),
              person("Martin", "Modrák", role = "ctb"),
@@ -12,8 +12,9 @@ Authors@R: c(person("Jonah", "Gabry", role = c("aut", "cre"), email = "jsg2201@c
              person("Eduardo", "Coronado Sroka", role = "ctb"),
              person("Teemu", "Sailynoja", role = "ctb"),
              person("Aki", "Vehtari", role = "ctb"), 
-             person("Behram", "Ulukır", role = "ctb"))
-Maintainer: Jonah Gabry <jsg2201@columbia.edu>
+             person("Behram", "Ulukır", role = "ctb"), 
+             person("Visruth", "Srimath Kandali", role = "ctb"))
+Maintainer: Jonah Gabry <jgabry@gmail.com>
 Description: Plotting functions for posterior analysis, MCMC diagnostics,
     prior and posterior predictive checks, and other visualizations
     to support the applied Bayesian workflow advocated in
@@ -33,13 +34,14 @@ Imports: dplyr (>= 0.8.0), ggplot2 (>= 3.4.0), ggridges (>= 0.5.5),
 Suggests: ggdist, ggfortify, gridExtra (>= 2.2.1), hexbin, knitr (>=
         1.16), loo (>= 2.0.0), RColorBrewer, rmarkdown (>= 1.0.0),
         rstan (>= 2.17.1), rstanarm (>= 2.17.4), rstantools (>= 1.5.0),
-        scales, shinystan (>= 2.3.0), survival, testthat (>= 2.0.0),
+        scales, shinystan (>= 2.3.0), survival, testthat (>= 3.0.0),
         vdiffr (>= 1.0.2)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 Encoding: UTF-8
+Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2025-08-31 20:34:16 UTC; jgabry
+Packaged: 2025-12-11 17:39:24 UTC; jgabry
 Author: Jonah Gabry [aut, cre],
   Tristan Mahr [aut] (ORCID: <https://orcid.org/0000-0002-8890-5116>),
   Paul-Christian Bürkner [ctb],
@@ -49,6 +51,7 @@ Author: Jonah Gabry [aut, cre],
   Eduardo Coronado Sroka [ctb],
   Teemu Sailynoja [ctb],
   Aki Vehtari [ctb],
-  Behram Ulukır [ctb]
+  Behram Ulukır [ctb],
+  Visruth Srimath Kandali [ctb]
 Repository: CRAN
-Date/Publication: 2025-08-31 23:10:02 UTC
+Date/Publication: 2025-12-12 07:10:55 UTC

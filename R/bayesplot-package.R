@@ -8,7 +8,7 @@
 #'
 #' @description
 #' \if{html}{
-#'    \figure{stanlogo.png}{options: width="50" alt="mc-stan.org"}
+#'    \figure{logo.svg}{options: width="50" alt="mc-stan.org"}
 #' }
 #' *Stan Development Team*
 #'
@@ -25,9 +25,9 @@
 #'
 #' @section Plotting functionality:
 #'  \if{html}{
-#'    \figure{bayesplot1.png}{options: width="30\%" alt="mcmc_areas"}
-#'    \figure{bayesplot2.png}{options: width="30\%" alt="ppc_hist"}
-#'    \figure{bayesplot3.png}{options: width="30\%" alt="ppc_dens_overlay"}
+#'    \figure{bayesplot1.png}{options: style="width: 30\%;" alt="mcmc_areas"}
+#'    \figure{bayesplot2.png}{options: style="width: 30\%;" alt="ppc_hist"}
+#'    \figure{bayesplot3.png}{options: style="width: 30\%;" alt="ppc_dens_overlay"}
 #'  }
 #'
 #' The plotting functions in **bayesplot** are organized into several modules:
@@ -104,7 +104,6 @@
 # release reminders (for devtools)
 release_questions <- function() {
   c(
-    "Have you reduced the size of the vignettes for CRAN?",
     "Have you tested with '^tests/testthat/_snaps$' removed from .Rbuildignore?",
     "Have you put '^tests/testthat/_snaps$' back in .Rbuildignore? before submitting?"
   )

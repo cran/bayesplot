@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 ## ----pkgs, include=FALSE------------------------------------------------------
 library("ggplot2")
 library("rstanarm")
+bayesplot_theme_set()
 set.seed(840)
 
 ## ----eval=FALSE---------------------------------------------------------------
