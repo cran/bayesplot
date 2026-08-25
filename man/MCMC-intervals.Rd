@@ -40,7 +40,8 @@ mcmc_areas(
   bw = NULL,
   adjust = NULL,
   kernel = NULL,
-  n_dens = NULL
+  n_dens = NULL,
+  bounds = NULL
 )
 
 mcmc_areas_ridges(
@@ -55,7 +56,8 @@ mcmc_areas_ridges(
   bw = NULL,
   adjust = NULL,
   kernel = NULL,
-  n_dens = NULL
+  n_dens = NULL,
+  bounds = NULL
 )
 
 mcmc_intervals_data(
@@ -83,7 +85,8 @@ mcmc_areas_data(
   bw = NULL,
   adjust = NULL,
   kernel = NULL,
-  n_dens = NULL
+  n_dens = NULL,
+  bounds = NULL
 )
 
 mcmc_areas_ridges_data(
@@ -97,7 +100,8 @@ mcmc_areas_ridges_data(
   bw = NULL,
   adjust = NULL,
   kernel = NULL,
-  n_dens = NULL
+  n_dens = NULL,
+  bounds = NULL
 )
 }
 \arguments{
@@ -122,7 +126,7 @@ similar functions. Examples of using \code{pars} in this way can be found on the
 \item{regex_pars}{An optional \link[base:grep]{regular expression} to use for
 parameter selection. Can be specified instead of \code{pars} or in addition to
 \code{pars}. When using \code{pars} for tidy parameter selection, the \code{regex_pars}
-argument is ignored since \link[tidyselect:language]{select helpers}
+argument is ignored since \link[tidyselect:select_helpers]{select helpers}
 perform a similar function.}
 
 \item{transformations}{Optionally, transformations to apply to parameters
@@ -179,9 +183,11 @@ points across the curves are the same height. The method \code{"scaled height"} 
 \item{border_size}{For \code{mcmc_areas()} and \code{mcmc_areas_ridges()}, the size of
 the ridgelines.}
 
-\item{bw, adjust, kernel, n_dens}{Optional arguments passed to
-\code{\link[stats:density]{stats::density()}} to override default kernel density estimation
-parameters. \code{n_dens} defaults to \code{1024}.}
+\item{bw, adjust, kernel, n_dens, bounds}{Optional arguments passed to
+\code{\link[stats:density]{stats::density()}} (and \code{bounds} to \code{\link[ggplot2:stat_density]{ggplot2::stat_density()}}) to override
+default kernel density estimation parameters or truncate the density
+support. If \code{NULL} (default), \code{bw} is set to \code{"nrd0"}, \code{adjust} to \code{1},
+\code{kernel} to \code{"gaussian"}, and \code{n_dens} to \code{1024}.}
 }
 \value{
 The plotting functions return a ggplot object that can be further
@@ -208,6 +214,13 @@ with uncertainty intervals shown as shaded areas under the curves.
 Density plot, as in \code{mcmc_areas()}, but drawn with overlapping
 ridgelines. This plot provides a compact display of (hierarchically)
 related distributions.
+}
+\item{\code{mcmc_intervals_data()}, \code{mcmc_areas_data()}, \code{mcmc_areas_ridges_data()}}{
+Data-preparation back ends for \code{mcmc_intervals()}, \code{mcmc_areas()}, and
+\code{mcmc_areas_ridges()}, respectively. Users can call these functions
+directly to obtain the prepared data frames of posterior interval
+summaries and create custom interval or density-area visualizations
+with \strong{ggplot2}.
 }
 }
 }
@@ -345,7 +358,7 @@ mcmc_areas_ridges(m, pars = "mu", regex_pars = "theta", border_size = 0.75) +
 
 }
 \seealso{
-Other MCMC: 
+Other MCMC:
 \code{\link{MCMC-combos}},
 \code{\link{MCMC-diagnostics}},
 \code{\link{MCMC-distributions}},

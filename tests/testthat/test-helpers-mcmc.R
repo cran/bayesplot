@@ -106,6 +106,14 @@ test_that("validate_df_with_chain works", {
   tbl <- tibble::tibble(parameter=rnorm(n=40), Chain=rep(1:4, each=10))
   a <- validate_df_with_chain(tbl)
   expect_type(a$Chain, "integer")
+
+  missing_chain_df <- data.frame(
+    Chain = c(1L, 1L, NA_integer_, NA_integer_),
+    V1 = rnorm(4),
+    V2 = rnorm(4)
+  )
+  expect_error(validate_df_with_chain(missing_chain_df),
+               "Chain values must not be NA")
 })
 
 test_that("df_with_chain2array works", {
@@ -113,6 +121,28 @@ test_that("df_with_chain2array works", {
   expect_mcmc_array(a)
 
   expect_error(df_with_chain2array(dframe), "is_df_with_chain")
+
+  # Unequal chain lengths should error via validate_df_with_chain
+  unequal_df <- data.frame(
+    Chain = c(1L, 1L, 1L, 1L, 2L, 2L, 2L),
+    V1 = rnorm(7),
+    V2 = rnorm(7)
+  )
+  expect_error(validate_df_with_chain(unequal_df),
+               "All chains must have the same number of iterations")
+  expect_error(df_with_chain2array(unequal_df),
+               "All chains must have the same number of iterations")
+
+  renumbered_df <- data.frame(
+    Chain = c(2L, 2L, 3L, 3L),
+    V1 = 1:4,
+    V2 = 5:8
+  )
+  a <- df_with_chain2array(renumbered_df)
+  expect_equal(dim(a), c(2, 2, 2))
+  expect_identical(unname(a[, 1, "V1"]), c(1L, 2L))
+  expect_identical(unname(a[, 2, "V1"]), c(3L, 4L))
+  expect_identical(as.character(dimnames(a)$Chain), c("1", "2"))
 })
 
 
@@ -126,6 +156,7 @@ test_that("is_chain_list works", {
   expect_true(is_chain_list(chainlist))
   expect_true(is_chain_list(chainlist1))
   expect_true(is_chain_list(chainlist1chain))
+  expect_false(is_chain_list(list()))
 })
 
 test_that("validate_chain_list works", {
@@ -145,6 +176,18 @@ test_that("validate_chain_list works", {
   chainlist[[1]] <- chainlist[[1]][-1, ]
   expect_error(validate_chain_list(chainlist),
                "Each chain should have the same number of iterations")
+})
+
+test_that("validate_chain_list detects colnames mismatch in chain 3+", {
+  ch <- matrix(rnorm(20), nrow = 2, dimnames = list(NULL, c("a", "b", "c", "d", "e",
+                                                             "f", "g", "h", "i", "j")))
+  chain3_bad <- ch
+  colnames(chain3_bad)[1] <- "z"
+  chains_ok <- list(ch, ch, ch)
+  chains_bad <- list(ch, ch, chain3_bad)
+
+  expect_identical(validate_chain_list(chains_ok), chains_ok)
+  expect_error(validate_chain_list(chains_bad), "parameters for each chain")
 })
 
 test_that("chain_list2array works", {
@@ -209,9 +252,12 @@ test_that("transformations recycled properly if not a named list", {
 
 
 # prepare_mcmc_array ------------------------------------------------------
-test_that("prepare_mcmc_array errors if NAs", {
-  arr[1,1,1] <- NA
-  expect_error(prepare_mcmc_array(arr), "NAs not allowed")
+test_that("prepare_mcmc_array warns but does not error if NAs", {
+  arr_na <- arr
+  arr_na[1, 1, 1] <- NA
+  expect_warning(out <- prepare_mcmc_array(arr_na), "NAs found in 'x'")
+  expect_s3_class(out, "mcmc_array")
+  expect_true(anyNA(out))
 })
 test_that("prepare_mcmc_array processes non-array input types correctly", {
   # errors are mostly covered by tests of the many internal functions above
@@ -305,6 +351,7 @@ test_that("diagnostic_factor.rhat works", {
   )
   expect_identical(levels(r), c("low", "ok", "high"))
 })
+
 test_that("diagnostic_factor.neff_ratio works", {
   ratios <- new_neff_ratio(c(low = 0.05, low = 0.01,
                              ok = 0.2, ok = 0.49,

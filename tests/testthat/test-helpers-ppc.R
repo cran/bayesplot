@@ -113,6 +113,85 @@ test_that("get_interpolation_values catches impossible values", {
   )
 })
 
+# validate_predictions with posterior::draws objects ----------------------
+test_that("validate_predictions accepts draws objects", {
+  result <- validate_predictions(posterior::as_draws_matrix(yrep), ncol(yrep))
+  expect_true(is.matrix(result))
+  expect_equal(dim(result), dim(yrep))
+  expect_true(is.numeric(result))
+
+  result <- validate_predictions(posterior::as_draws_array(yrep))
+  expect_true(is.matrix(result))
+  expect_equal(dim(result), dim(yrep))
+
+  result <- validate_predictions(posterior::as_draws_df(yrep))
+  expect_true(is.matrix(result))
+  expect_equal(dim(result), dim(yrep))
+
+  result <- validate_predictions(posterior::as_draws_list(yrep))
+  expect_true(is.matrix(result))
+  expect_equal(dim(result), dim(yrep))
+
+  result <- validate_predictions(posterior::as_draws_rvars(yrep))
+  expect_true(is.matrix(result))
+  expect_equal(dim(result), dim(yrep))
+})
+
+
+draws_arr <- posterior::bind_draws(
+  posterior::as_draws_array(matrix(rnorm(1000), nrow = 10, ncol = 100, dimnames = list(NULL, paste0("V", 1:100)))),
+  posterior::as_draws_array(matrix(rnorm(1000), nrow = 10, ncol = 100, dimnames = list(NULL, paste0("V", 1:100)))),
+  posterior::as_draws_array(matrix(rnorm(1000), nrow = 10, ncol = 100, dimnames = list(NULL, paste0("V", 1:100)))),
+  along = "chain"
+)
+
+test_that("validate_predictions merges chains from multi-chain draws objects", {
+  # 10 iterations x 3 chains x 100 variables -> 30 x 100 matrix
+  result <- validate_predictions(draws_arr)
+  expect_equal(nrow(result), 30)
+  expect_equal(ncol(result), 100)
+
+  result <- validate_predictions(posterior::as_draws_df(draws_arr))
+  expect_equal(nrow(result), 30)
+  expect_equal(ncol(result), 100)
+
+  result <- validate_predictions(posterior::as_draws_list(draws_arr))
+  expect_equal(nrow(result), 30)
+  expect_equal(ncol(result), 100)
+
+  result <- validate_predictions(posterior::as_draws_rvars(draws_arr))
+  expect_equal(nrow(result), 30)
+  expect_equal(ncol(result), 100)
+})
+
+test_that("posterior::draws input results in identical ggplot data", {
+  # comparing to regular yrep
+  p0 <- ggplot2::ggplot_build(ppc_dens_overlay(y, yrep))
+  p1 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_matrix(yrep)))
+  p2 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_array(yrep)))
+  p3 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_df(yrep)))
+  p4 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_list(yrep)))
+  p5 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_rvars(yrep)))
+  expect_identical(p1@data, p0@data)
+  expect_identical(p2@data, p0@data)
+  expect_identical(p3@data, p0@data)
+  expect_identical(p4@data, p0@data)
+  expect_identical(p5@data, p0@data)
+
+  # comparing to converted draws_arr
+  p1 <- ggplot2::ggplot_build(ppc_dens_overlay(y, draws_arr))
+  p2 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_matrix(draws_arr)))
+  p3 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_df(draws_arr)))
+  p4 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_list(draws_arr)))
+  p5 <- ggplot2::ggplot_build(ppc_dens_overlay(y, posterior::as_draws_rvars(draws_arr)))
+  expect_identical(p2@data, p1@data)
+  expect_identical(p3@data, p1@data)
+  expect_identical(p4@data, p1@data)
+  expect_identical(p5@data, p1@data)
+})
+
+
+
 # ecdf_intervals ---------------------------------------------------------
 test_that("ecdf_intervals returns right dimensions and values", {
   lims <- ecdf_intervals(.0001, N = 100, K = 100, L = 1)
@@ -123,4 +202,225 @@ test_that("ecdf_intervals returns right dimensions and values", {
   expect_equal(max(lims$upper), 100)
   expect_equal(min(lims$lower), 0)
   expect_equal(max(lims$lower), 100)
+})
+
+# display p-values in plots ------------------------------------------------
+test_that("formatting of p-values works as expected", {
+  expect_equal(fmt_p(0.446), "0.45")
+  expect_equal(fmt_p(0.045), "0.045")
+  expect_equal(fmt_p(0.0045), "0.005")
+  expect_equal(fmt_p(0.00045), "0.000")
+})
+
+resolve_pit_ecdf_method_args <- function(..., prob = 0.99) {
+  args <- c(
+    list(
+      method = NULL,
+      pit = NULL,
+      prob = prob,
+      interpolate_adj = NULL,
+      test = NULL,
+      gamma = NULL,
+      linewidth = NULL,
+      color = NULL,
+      help_text = NULL,
+      pareto_pit = NULL,
+      help_text_shrinkage = NULL
+    ),
+    list(...)
+  )
+  do.call(
+    .pit_ecdf_resolve_method_args,
+    args[!duplicated(names(args), fromLast = TRUE)]
+  )
+}
+
+test_that(".pit_ecdf_resolve_method_args validates prob", {
+  expect_error(
+    resolve_pit_ecdf_method_args(prob = -0.1),
+    "`prob` must be a probability value in [0, 1], not -0.1",
+    fixed = TRUE
+  )
+  expect_error(
+    resolve_pit_ecdf_method_args(prob = 1.1),
+    "`prob` must be a probability value in [0, 1], not 1.1",
+    fixed = TRUE
+  )
+
+  out <- resolve_pit_ecdf_method_args(prob = 0.99, method = "correlated")
+  expect_equal(out$alpha, 0.01)
+})
+
+test_that(".pit_ecdf_resolve_method_args handles NULL method", {
+  expect_message(
+    out <- resolve_pit_ecdf_method_args(),
+    "In the next major release"
+  )
+  expect_equal(out$method, "independent")
+
+  expect_silent(
+    out <- resolve_pit_ecdf_method_args(method = "correlated")
+  )
+  expect_equal(out$method, "correlated")
+})
+
+test_that(".pit_ecdf_resolve_method_args matches method", {
+  expect_error(
+    resolve_pit_ecdf_method_args(method = "bogus"),
+    class = "rlang_error"
+  )
+
+  expect_message(
+    out <- resolve_pit_ecdf_method_args(method = "independent"),
+    "superseded by the 'correlated' method"
+  )
+  expect_equal(out$method, "independent")
+})
+
+test_that(".pit_ecdf_resolve_method_args sets correlated defaults", {
+  out <- suppressMessages(
+    resolve_pit_ecdf_method_args(method = "correlated")
+  )
+  expect_named(
+    out,
+    c(
+      "method", "alpha", "test", "gamma", "linewidth", "color",
+      "help_text", "pareto_pit", "help_text_shrinkage"
+    )
+  )
+  expect_equal(out$method, "correlated")
+  expect_equal(out$test, "POT")
+  expect_equal(out$gamma, 0)
+  expect_equal(out$linewidth, 0.3)
+  expect_equal(out$color, c(ecdf = "grey60", highlight = "red"))
+  expect_true(out$help_text)
+  expect_equal(out$help_text_shrinkage, 0.8)
+
+  out <- suppressMessages(resolve_pit_ecdf_method_args(
+    method = "correlated",
+    test = "PRIT",
+    gamma = 0.5,
+    linewidth = 1,
+    color = c(ecdf = "grey60", highlight = "red"),
+    help_text = FALSE,
+    help_text_shrinkage = 0.5,
+    pareto_pit = FALSE
+  ))
+  expect_equal(out$test, "PRIT")
+  expect_equal(out$gamma, 0.5)
+  expect_equal(out$linewidth, 1)
+  expect_equal(out$color, c(ecdf = "grey60", highlight = "red"))
+  expect_false(out$help_text)
+  expect_equal(out$help_text_shrinkage, 0.5)
+  expect_false(out$pareto_pit)
+})
+
+test_that(".pit_ecdf_resolve_method_args auto-defaults pareto_pit for correlated", {
+  out <- suppressMessages(resolve_pit_ecdf_method_args(method = "correlated"))
+  expect_true(out$pareto_pit)
+
+  out <- suppressMessages(resolve_pit_ecdf_method_args(
+    method = "correlated",
+    test = "PIET"
+  ))
+  expect_true(out$pareto_pit)
+
+  out <- suppressMessages(resolve_pit_ecdf_method_args(
+    method = "correlated",
+    test = "PRIT"
+  ))
+  expect_false(out$pareto_pit)
+})
+
+test_that(".pit_ecdf_resolve_method_args warns and errors for correlated conflicts", {
+  expect_message(
+    resolve_pit_ecdf_method_args(
+      method = "correlated",
+      interpolate_adj = TRUE
+    ),
+    "ignoring.*interpolate_adj"
+  )
+
+  expect_error(
+    resolve_pit_ecdf_method_args(
+      method = "correlated",
+      pit = c(0.2, 0.5),
+      pareto_pit = TRUE
+    ),
+    "pareto_pit = TRUE"
+  )
+
+  expect_silent(
+    out <- resolve_pit_ecdf_method_args(
+      method = "correlated",
+      pit = NULL,
+      pareto_pit = TRUE
+    )
+  )
+  expect_true(out$pareto_pit)
+})
+
+test_that(".pit_ecdf_resolve_method_args ignores independent-incompatible args", {
+  expect_message(
+    expect_message(
+      out <- resolve_pit_ecdf_method_args(
+        method = "independent",
+        test = "POT",
+        gamma = 0,
+        help_text = TRUE,
+        help_text_shrinkage = 0.5
+      ),
+      "ignoring.*test.*gamma.*help_text.*help_text_shrinkage"
+    ),
+    "superseded by the 'correlated' method"
+  )
+  expect_equal(out$test, "POT")
+  expect_equal(out$gamma, 0)
+  expect_true(out$help_text)
+  expect_equal(out$help_text_shrinkage, 0.5)
+  expect_false(out$pareto_pit)
+
+  expect_message(
+    out <- resolve_pit_ecdf_method_args(
+      method = "independent",
+      test = "POT"
+    ),
+    "ignoring.*test"
+  )
+  expect_equal(out$test, "POT")
+
+  out <- suppressMessages(resolve_pit_ecdf_method_args(
+    method = "independent",
+    pareto_pit = TRUE
+  ))
+  expect_true(out$pareto_pit)
+})
+
+test_that(".pit_ecdf_resolve_method_args validates color for correlated method", {
+  expect_error(
+    resolve_pit_ecdf_method_args(
+      method = "correlated", 
+      color = "blue"
+    ),
+    "`color`"
+  )
+  expect_error(
+    resolve_pit_ecdf_method_args(
+      method = "correlated", 
+      color = c("grey60", "red")
+    ),
+    "`color`"
+  )
+  expect_error(
+    resolve_pit_ecdf_method_args(
+      method = "correlated", 
+      color = c(ecdf = "grey60")
+    ),
+    "`color`"
+  )
+  out <- suppressMessages(resolve_pit_ecdf_method_args(
+    method = "correlated",
+    color = c(ecdf = "darkblue", highlight = "orange")
+  ))
+  expect_equal(out$color, c(ecdf = "darkblue", highlight = "orange"))
 })

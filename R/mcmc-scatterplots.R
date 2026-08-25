@@ -98,18 +98,18 @@
 #'    )
 #'
 #' # add ellipse
-#' p + stat_ellipse(level = 0.9, color = "gray20", size = 1)
+#' p + stat_ellipse(level = 0.9, color = "gray20", linewidth = 1)
 #'
 #' # add contour
 #' color_scheme_set("red")
 #' p2 <- mcmc_scatter(x, pars = c("alpha", "sigma"), size = 3.5, alpha = 0.25)
-#' p2 + stat_density_2d(color = "black", size = .5)
+#' p2 + stat_density_2d(color = "black", linewidth = .5)
 #'
 #' # can also add lines/smooths
 #' color_scheme_set("pink")
 #' (p3 <- mcmc_scatter(x, pars = c("alpha", "beta[3]"), alpha = 0.25, size = 3))
 #' p3 + geom_smooth(method = "lm", se = FALSE, color = "gray20",
-#'                  size = .75, linetype = 2)
+#'                  linewidth = .75, linetype = 2)
 #'
 #' \donttest{
 #' if (requireNamespace("hexbin", quietly = TRUE)) {
@@ -352,10 +352,10 @@ mcmc_pairs <- function(x,
     param <- sym("Parameter")
     val <- sym("Value")
     np <- validate_nuts_data_frame(np, lp)
-    divs <- dplyr::filter(np, UQ(param) == "divergent__") %>% pull(UQ(val))
+    divs <- dplyr::filter(np, !!param == "divergent__") %>% pull(!!val)
     divergent__ <- matrix(divs, nrow = n_iter * n_chain, ncol = n_param)[, 1]
     if (!no_max_td) {
-      gt_max_td <- (dplyr::filter(np, UQ(param) == "treedepth__") %>% pull(UQ(val))) >= max_treedepth
+      gt_max_td <- (dplyr::filter(np, !!param == "treedepth__") %>% pull(!!val)) >= max_treedepth
       max_td_hit__ <- matrix(gt_max_td, nrow = n_iter * n_chain, ncol = n_param)[, 1]
     }
   }
@@ -405,9 +405,14 @@ mcmc_pairs <- function(x,
         divs_j_fac <- factor(as.logical(divs_j),
                              levels = c(FALSE, TRUE),
                              labels = c("NoDiv", "Div"))
+        # pass the indicator via `data` so each panel keeps its own values
+        # (a bare loop variable in aes() is only evaluated at plot-build time,
+        # when it would have just the value from the last panel)
+        # https://github.com/stan-dev/bayesplot/issues/555
         plots[[j]] <- plots[[j]] +
           geom_point(
-            aes(color = divs_j_fac, size = divs_j_fac),
+            aes(color = .data$Divergent, size = .data$Divergent),
+            data = data.frame(x = x_j[, 1], y = x_j[, 2], Divergent = divs_j_fac),
             shape = np_style$shape[["div"]],
             alpha = np_style$alpha[["div"]],
             na.rm = TRUE
@@ -418,7 +423,8 @@ mcmc_pairs <- function(x,
                                    labels = c("NoHit", "Hit"))
         plots[[j]] <- plots[[j]] +
           geom_point(
-            aes(color = max_td_hit_j_fac, size = max_td_hit_j_fac),
+            aes(color = .data$MaxTreedepth, size = .data$MaxTreedepth),
+            data = data.frame(x = x_j[, 1], y = x_j[, 2], MaxTreedepth = max_td_hit_j_fac),
             shape = np_style$shape[["td"]],
             alpha = np_style$alpha[["td"]],
             na.rm = TRUE
@@ -674,11 +680,11 @@ pairs_condition <- function(chains = NULL, draws = NULL, nuts = NULL) {
     divg <- sym("Divergent")
     xydata$Divergent <-
       np %>%
-      dplyr::filter(UQ(param) == "divergent__") %>%
-      pull(UQ(val))
+      dplyr::filter(!!param == "divergent__") %>%
+      pull(!!val)
 
-    divdata <- dplyr::filter(xydata, UQ(divg) == 1)
-    xydata <- dplyr::filter(xydata, UQ(divg) == 0)
+    divdata <- dplyr::filter(xydata, !!divg == 1)
+    xydata <- dplyr::filter(xydata, !!divg == 0)
   }
 
   graph <- ggplot(data = xydata, aes(x = .data$x, y = .data$y)) +
@@ -880,7 +886,7 @@ handle_condition <- function(x, condition=NULL, np=NULL, lp=NULL) {
 
     } else {
       param <- sym("Parameter")
-      mark <- dplyr::filter(np, UQ(param) == condition)
+      mark <- dplyr::filter(np, !!param == condition)
       mark <- unstack_to_matrix(mark, Value ~ Chain)
     }
     if (condition == "divergent__") {

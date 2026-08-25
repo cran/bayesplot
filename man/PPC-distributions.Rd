@@ -27,10 +27,11 @@ ppc_dens_overlay(
   size = 0.25,
   alpha = 0.7,
   trim = FALSE,
-  bw = "nrd0",
-  adjust = 1,
-  kernel = "gaussian",
-  n_dens = 1024
+  bw = NULL,
+  adjust = NULL,
+  kernel = NULL,
+  bounds = NULL,
+  n_dens = NULL
 )
 
 ppc_dens_overlay_grouped(
@@ -41,17 +42,18 @@ ppc_dens_overlay_grouped(
   size = 0.25,
   alpha = 0.7,
   trim = FALSE,
-  bw = "nrd0",
-  adjust = 1,
-  kernel = "gaussian",
-  n_dens = 1024
+  bw = NULL,
+  adjust = NULL,
+  kernel = NULL,
+  bounds = NULL,
+  n_dens = NULL
 )
 
 ppc_ecdf_overlay(
   y,
   yrep,
   ...,
-  discrete = FALSE,
+  discrete = deprecated(),
   pad = TRUE,
   size = 0.25,
   alpha = 0.7
@@ -62,13 +64,13 @@ ppc_ecdf_overlay_grouped(
   yrep,
   group,
   ...,
-  discrete = FALSE,
+  discrete = deprecated(),
   pad = TRUE,
   size = 0.25,
   alpha = 0.7
 )
 
-ppc_dens(y, yrep, ..., trim = FALSE, size = 0.5, alpha = 1)
+ppc_dens(y, yrep, ..., trim = FALSE, size = 0.5, alpha = 1, bounds = NULL)
 
 ppc_hist(
   y,
@@ -105,7 +107,7 @@ ppc_freqpoly_grouped(
 
 ppc_boxplot(y, yrep, ..., notch = TRUE, size = 0.5, alpha = 1)
 
-ppc_dots(y, yrep, ..., binwidth = NA, quantiles = NA, freq = TRUE)
+ppc_dots(y, yrep, ..., binwidth = NA, quantiles = 100, freq = TRUE)
 
 ppc_violin_grouped(
   y,
@@ -129,7 +131,15 @@ ppc_pit_ecdf(
   K = NULL,
   prob = 0.99,
   plot_diff = FALSE,
-  interpolate_adj = NULL
+  interpolate_adj = NULL,
+  method = NULL,
+  test = NULL,
+  gamma = NULL,
+  linewidth = NULL,
+  color = NULL,
+  help_text = NULL,
+  pareto_pit = NULL,
+  help_text_shrinkage = NULL
 )
 
 ppc_pit_ecdf_grouped(
@@ -141,19 +151,28 @@ ppc_pit_ecdf_grouped(
   pit = NULL,
   prob = 0.99,
   plot_diff = FALSE,
-  interpolate_adj = NULL
+  interpolate_adj = NULL,
+  method = NULL,
+  test = NULL,
+  gamma = NULL,
+  linewidth = NULL,
+  color = NULL,
+  help_text = NULL,
+  pareto_pit = NULL,
+  help_text_shrinkage = NULL
 )
 }
 \arguments{
 \item{y}{A vector of observations. See \strong{Details}.}
 
 \item{yrep}{An \code{S} by \code{N} matrix of draws from the posterior (or prior)
-predictive distribution. The number of rows, \code{S}, is the size of the
-posterior (or prior) sample used to generate \code{yrep}. The number of columns,
-\code{N} is the number of predicted observations (\code{length(y)}). The columns of
-\code{yrep} should be in the same order as the data points in \code{y} for the plots
-to make sense. See the \strong{Details} and \strong{Plot Descriptions} sections for
-additional advice specific to particular plots.}
+predictive distribution, or a \code{\link[posterior:draws]{posterior::draws}} object. The number of
+rows, \code{S}, is the size of the posterior (or prior) sample used to generate
+\code{yrep}. The number of columns, \code{N} is the number of predicted observations
+(\code{length(y)}). The columns of \code{yrep} should be in the same order as the
+data points in \code{y} for the plots to make sense. See the \strong{Details} and
+\strong{Plot Descriptions} sections for additional advice specific to particular
+plots.}
 
 \item{group}{A grouping variable of the same length as \code{y}.
 Will be coerced to \link[base:factor]{factor} if not already a factor.
@@ -167,30 +186,31 @@ the predictive distributions.}
 
 \item{trim}{A logical scalar passed to \code{\link[ggplot2:geom_density]{ggplot2::geom_density()}}.}
 
-\item{bw, adjust, kernel, n_dens}{Optional arguments passed to
-\code{\link[stats:density]{stats::density()}} to override default kernel density estimation
-parameters. \code{n_dens} defaults to \code{1024}.}
+\item{bw, adjust, kernel, n_dens, bounds}{Optional arguments passed to
+\code{\link[stats:density]{stats::density()}} (and \code{bounds} to \code{\link[ggplot2:stat_density]{ggplot2::stat_density()}}) to override
+default kernel density estimation parameters or truncate the density
+support. If \code{NULL} (default), \code{bw} is set to \code{"nrd0"}, \code{adjust} to \code{1},
+\code{kernel} to \code{"gaussian"}, and \code{n_dens} to \code{1024}.}
 
-\item{discrete}{For \code{ppc_ecdf_overlay()}, should the data be treated as
-discrete? The default is \code{FALSE}, in which case \code{geom="line"} is
-passed to \code{\link[ggplot2:stat_ecdf]{ggplot2::stat_ecdf()}}. If \code{discrete} is set to
-\code{TRUE} then \code{geom="step"} is used.}
+\item{discrete}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} The \code{discrete} argument is
+deprecated. The ECDF is a step function by definition, so \code{geom_step()} is
+now always used.}
 
 \item{pad}{A logical scalar passed to \code{\link[ggplot2:stat_ecdf]{ggplot2::stat_ecdf()}}.}
 
-\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}, \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}},
+and \code{\link[ggdist:stat_dots]{ggdist::stat_dots()}} to override the default binwidth.}
 
-\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} and \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}
+to override the default binning.}
 
-\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an
-alternative to \code{binwidth}.}
+\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an alternative to
+\code{binwidth}.}
 
-\item{freq}{For histograms, \code{freq=TRUE} (the default) puts count on the
-y-axis. Setting \code{freq=FALSE} puts density on the y-axis. (For many
-plots the y-axis text is off by default. To view the count or density
-labels on the y-axis see the \code{\link[=yaxis_text]{yaxis_text()}} convenience
+\item{freq}{For histograms and frequency polygons, \code{freq=TRUE} (the default)
+puts count on the y-axis. Setting \code{freq=FALSE} puts density on the y-axis.
+(For many plots the y-axis text is off by default. To view the count or
+density labels on the y-axis see the \code{\link[=yaxis_text]{yaxis_text()}} convenience
 function.)}
 
 \item{notch}{For the box plot, a logical scalar passed to
@@ -199,12 +219,12 @@ function.)}
 
 \item{quantiles}{For dot plots, an optional integer passed to
 \code{\link[ggdist:stat_dots]{ggdist::stat_dots()}} specifying the number of quantiles to use for a
-quantile dot plot. If \code{quantiles} is \code{NA} (the default) then all data
-points are plotted.}
+quantile dot plot. If \code{quantiles} is \code{NA} then all data points are plotted.
+The default is \code{quantiles=100} so that each dot represent one percent of
+posterior mass.}
 
-\item{probs}{A numeric vector passed to \code{\link[ggplot2:geom_violin]{ggplot2::geom_violin()}}'s
-\code{draw_quantiles} argument to specify at which quantiles to draw
-horizontal lines. Set to \code{NULL} to remove the lines.}
+\item{probs}{A numeric vector of probabilities controlling where quantile
+lines are drawn. Set to \code{NULL} to remove the lines.}
 
 \item{y_draw}{For \code{ppc_violin_grouped()}, a string specifying how to draw
 \code{y}: \code{"violin"} (default), \code{"points"} (jittered points), or \code{"both"}.}
@@ -215,32 +235,74 @@ to to the \code{size}, \code{alpha}, and \code{width} arguments of \code{\link[g
 to control the appearance of \code{y} points. The default of \code{y_jitter=NULL}
 will let \strong{ggplot2} determine the amount of jitter.}
 
-\item{pit}{An optional vector of probability integral transformed values for
-which the ECDF is to be drawn. If NULL, PIT values are computed to \code{y} with
-respect to the corresponding values in \code{yrep}.}
+\item{pit}{For \code{ppc_pit_ecdf()} and \code{ppc_pit_ecdf_grouped()}, an optional
+vector of precomputed PIT values (length \code{length(y)}, values in \verb{[0, 1]}).
+If \code{NULL} (default), PIT values are computed internally.}
 
 \item{K}{An optional integer defining the number of equally spaced evaluation
 points for the PIT-ECDF. Reducing K when using \code{interpolate_adj = FALSE}
-makes computing the confidence bands faster. For \code{ppc_pit_ecdf} and
-\code{ppc_pit_ecdf_grouped}, if PIT values are supplied, defaults to
-\code{length(pit)}, otherwise yrep determines the maximum accuracy of the
-estimated PIT values and \code{K} is set to \code{min(nrow(yrep) + 1, 1000)}. For
-\code{mcmc_rank_ecdf}, defaults to the number of iterations per chain in \code{x}.}
+makes computing the confidence bands faster. For \code{ppc_pit_ecdf()} and
+\code{ppc_pit_ecdf_grouped()} when \code{method = 'independent'}. If \code{pit} is
+supplied, defaults to \code{length(pit)}, otherwise \code{yrep} determines the
+maximum accuracy of the estimated PIT values and \code{K} is set to
+\code{min(nrow(yrep) + 1, 1000)}. For \code{mcmc_rank_ecdf()}, defaults to the number
+of iterations per chain in \code{x}.}
 
 \item{prob}{The desired simultaneous coverage level of the bands around the
-ECDF. A value in (0,1).}
+ECDF. A value in (0,1). For \code{ppc_pit_ecdf()} and \code{ppc_pit_ecdf_grouped()}.}
 
 \item{plot_diff}{A boolean defining whether to plot the difference between
-the observed PIT- ECDF and the theoretical expectation for uniform PIT
-values rather than plotting the regular ECDF. The default is \code{FALSE}, but
-for large samples we recommend setting \code{plot_diff=TRUE} as the difference
-plot will visually show a more dynamic range.}
+the observed PIT-ECDF and the theoretical expectation for uniform PIT
+values rather than plotting the regular ECDF. For \code{ppc_pit_ecdf()} and
+\code{ppc_pit_ecdf_grouped()} when \code{method = 'independent'}. The default is
+\code{FALSE}, but for large samples we recommend setting \code{plot_diff = TRUE} to
+better use the plot area.}
 
 \item{interpolate_adj}{A boolean defining if the simultaneous confidence
 bands should be interpolated based on precomputed values rather than
 computed exactly. Computing the bands may be computationally intensive and
 the approximation gives a fast method for assessing the ECDF trajectory.
-The default is to use interpolation if \code{K} is greater than 200.}
+For \code{ppc_pit_ecdf()} and \code{ppc_pit_ecdf_grouped()} when
+\code{method = 'independent'} and for \code{mcmc_rank_ecdf()}. The default is to use
+interpolation if \code{K} is greater than 200.}
+
+\item{method}{The method used to calculate the uniformity test:
+\itemize{
+\item \code{"independent"}: assumes independent PIT values (Säilynoja et al., 2022).
+\item \code{"correlated"}: accounts for correlated PIT values (Tesso & Vehtari, 2026).
+}}
+
+\item{test}{When \code{method = "correlated"}, which dependence-aware test to use:
+\code{"POT"}, \code{"PRIT"}, or \code{"PIET"}. Defaults to \code{"POT"}.}
+
+\item{gamma}{When \code{method = "correlated"}, tolerance threshold controlling
+how strongly suspicious points are flagged. Larger values (\code{gamma > 0})
+emphasize points with larger deviations. If \code{NULL}, defaults to \code{0} and
+thus all suspicious points are flagged.}
+
+\item{linewidth}{When \code{method = "correlated"}, the line width of the ECDF.
+Defaults to \code{0.3}.}
+
+\item{color}{When \code{method = "correlated"}, a named character vector of
+plot colors with elements \code{ecdf} and \code{highlight}. \code{ecdf} is used for the
+main ECDF line; \code{highlight} for suspicious regions flagged by the
+uniformity test. Defaults to \code{c(ecdf = "grey60", highlight = "red")}.
+Values must be valid ggplot2 colors (e.g. R color names or hex codes).
+Ignored when \code{method = "independent"}.}
+
+\item{help_text}{When \code{method = "correlated"}, a boolean defining whether
+to add information about p-value to the plot. Defaults to \code{TRUE}.}
+
+\item{pareto_pit}{A boolean defining whether to compute PIT values using
+Pareto-PIT method. Defaults to \code{TRUE} if \code{test} is either \code{"POT"} or
+\code{"PIET"} and no \code{pit} values are provided otherwise \code{FALSE}. This argument
+should normally not be modified by the user, except for development
+purposes. If \code{pit} is non-\code{NULL}, \code{pareto_pit} cannot be simultaneously
+\code{TRUE}.}
+
+\item{help_text_shrinkage}{When \code{method = "correlated"}, a numeric value
+between 0 and 1 defining the factor by which the help-text (p-value
+information) is scaled. The default is \code{0.8}.}
 }
 \value{
 The plotting functions return a ggplot object that can be further
@@ -270,7 +332,7 @@ contain only a small number of rows. See the \strong{Examples} section.
 \item{\code{ppc_dots()}}{
 A dot plot plot is displayed for \code{y} and each dataset (row) in \code{yrep}.
 For these plots \code{yrep} should therefore contain only a small number of rows.
-See the \strong{Examples} section. This function requires \link[ggdist:stat_dots]{ggdist::stat_dots} to be installed.
+See the \strong{Examples} section.
 }
 \item{\code{ppc_freqpoly_grouped()}}{
 A separate frequency polygon is plotted for each level of a grouping
@@ -280,11 +342,10 @@ variable for \code{y} and each dataset (row) in \code{yrep}. For this plot
 }
 \item{\code{ppc_ecdf_overlay()}, \code{ppc_dens_overlay()},
 \code{ppc_ecdf_overlay_grouped()}, \code{ppc_dens_overlay_grouped()}}{
-Kernel density or empirical CDF estimates of each dataset (row) in
-\code{yrep} are overlaid, with the distribution of \code{y} itself on top
-(and in a darker shade). When using \code{ppc_ecdf_overlay()} with discrete
-data, set the \code{discrete} argument to \code{TRUE} for better results.
-For an example of \code{ppc_dens_overlay()} also see Gabry et al. (2019).
+Kernel density or empirical CDF estimates of each dataset (row) in \code{yrep}
+are overlaid, with the distribution of \code{y} itself on top (and in a darker
+shade). For an example of \code{ppc_dens_overlay()} also see Gabry et al.
+(2019).
 }
 \item{\code{ppc_violin_grouped()}}{
 The density estimate of \code{yrep} within each level of a grouping
@@ -293,12 +354,25 @@ quantiles. \code{y} is overlaid on the plot either as a violin, points, or
 both, depending on the \code{y_draw} argument.
 }
 \item{\code{ppc_pit_ecdf()}, \code{ppc_pit_ecdf_grouped()}}{
-The PIT-ECDF of the empirical PIT values of \code{y} computed with respect to
-the corresponding \code{yrep} values. \code{100 * prob}\% central simultaneous
-confidence intervals are provided to asses if \code{y} and \code{yrep} originate
-from the same distribution. The PIT values can also be provided directly
-as \code{pit}.
-See Säilynoja et al. (2021) for more details.}
+The PIT-ECDF of empirical PIT values for \code{y} relative to corresponding
+draws in \code{yrep} (or precomputed values supplied via \code{pit}).
+With \code{method = "independent"}, the plot shows \code{100 * prob}\% central
+simultaneous confidence intervals under an independence assumption.
+With \code{method = "correlated"}, the plot uses a dependence-aware
+uniformity assessment and can highlight suspicious regions.
+See Säilynoja et al. (2025) and Tesso & Vehtari (2026) for details.
+Note that the default "independent" method is \strong{superseded} by
+the "correlated" method (Tesso & Vehtari, 2026) which accounts for
+dependent LOO-PIT values.
+}
+\item{\code{ppc_data()}}{
+This function prepares data for plotting with \strong{ggplot2} and doesn't
+itself make any plots. Users can call it directly to obtain the underlying
+data frame that (in most cases) is passed to \strong{ggplot2}. This is useful
+when you want to customize the appearance of PPC plots beyond what the
+built-in plotting functions allow, or when you want to construct new types
+of PPC visualizations based on the same underlying data.
+}
 }
 }
 
@@ -311,7 +385,7 @@ dim(yrep)
 
 ppc_dens_overlay(y, yrep[1:25, ])
 \donttest{
-# ppc_ecdf_overlay with continuous data (set discrete=TRUE if discrete data)
+# ppc_ecdf_overlay
 ppc_ecdf_overlay(y, yrep[sample(nrow(yrep), 25), ])
 
 # PIT-ECDF and PIT-ECDF difference plot of the PIT values of y compared to
@@ -386,9 +460,13 @@ Goodness of Fit Evaluation and Multiple Sample Comparison \href{https://arxiv.or
 Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari,
 A., and Rubin, D. B. (2013). \emph{Bayesian Data Analysis.} Chapman & Hall/CRC
 Press, London, third edition. (Ch. 6)
+
+Tesso, H., & Vehtari, A. (2026). LOO-PIT predictive model
+checking. arXiv preprint https://arxiv.org/abs/2603.02928.
 }
 \seealso{
-Other PPCs: 
+Other PPCs:
+\code{\link{PPC-calibration}},
 \code{\link{PPC-censoring}},
 \code{\link{PPC-discrete}},
 \code{\link{PPC-errors}},

@@ -5,6 +5,7 @@
 \alias{ppc_bars}
 \alias{ppc_bars_grouped}
 \alias{ppc_rootogram}
+\alias{ppc_rootogram_grouped}
 \alias{ppc_bars_data}
 \title{PPCs for discrete outcomes}
 \usage{
@@ -44,18 +45,31 @@ ppc_rootogram(
   bound_distinct = TRUE
 )
 
+ppc_rootogram_grouped(
+  y,
+  yrep,
+  group,
+  style = c("standing", "hanging", "suspended", "discrete"),
+  ...,
+  facet_args = list(),
+  prob = 0.9,
+  size = 1,
+  bound_distinct = TRUE
+)
+
 ppc_bars_data(y, yrep, group = NULL, prob = 0.9, freq = TRUE)
 }
 \arguments{
 \item{y}{A vector of observations. See \strong{Details}.}
 
 \item{yrep}{An \code{S} by \code{N} matrix of draws from the posterior (or prior)
-predictive distribution. The number of rows, \code{S}, is the size of the
-posterior (or prior) sample used to generate \code{yrep}. The number of columns,
-\code{N} is the number of predicted observations (\code{length(y)}). The columns of
-\code{yrep} should be in the same order as the data points in \code{y} for the plots
-to make sense. See the \strong{Details} and \strong{Plot Descriptions} sections for
-additional advice specific to particular plots.}
+predictive distribution, or a \code{\link[posterior:draws]{posterior::draws}} object. The number of
+rows, \code{S}, is the size of the posterior (or prior) sample used to generate
+\code{yrep}. The number of columns, \code{N} is the number of predicted observations
+(\code{length(y)}). The columns of \code{yrep} should be in the same order as the
+data points in \code{y} for the plots to make sense. See the \strong{Details} and
+\strong{Plot Descriptions} sections for additional advice specific to particular
+plots.}
 
 \item{...}{Currently unused.}
 
@@ -68,9 +82,9 @@ of the expected counts.)}
 the bar width.}
 
 \item{size, fatten, linewidth}{For bar plots, \code{size}, \code{fatten}, and \code{linewidth}
-are passed to \code{\link[ggplot2:geom_linerange]{ggplot2::geom_pointrange()}} to control the appearance of the
+are passed to \code{\link[ggplot2:geom_pointrange]{ggplot2::geom_pointrange()}} to control the appearance of the
 \code{yrep} points and intervals. For rootograms \code{size} is passed to
-\code{\link[ggplot2:geom_path]{ggplot2::geom_line()}} and \code{\link[ggplot2:geom_linerange]{ggplot2::geom_pointrange()}}.}
+\code{\link[ggplot2:geom_line]{ggplot2::geom_line()}} and \code{\link[ggplot2:geom_pointrange]{ggplot2::geom_pointrange()}}.}
 
 \item{freq}{For bar plots only, if \code{TRUE} (the default) the y-axis will
 display counts. Setting \code{freq=FALSE} will put proportions on the y-axis.}
@@ -88,7 +102,7 @@ style. The options are \code{"discrete"}, \code{"standing"}, \code{"hanging"}, a
 \code{"suspended"}. See the \strong{Plot Descriptions} section, below, for
 details on the different styles.}
 
-\item{bound_distinct}{For \verb{ppc_rootogram(style = "discrete)},
+\item{bound_distinct}{For \verb{ppc_rootogram(style = "discrete)} and \verb{ppc_rootogram_grouped(style = "discrete)},
 if \code{TRUE} then the observed counts will be plotted with different shapes
 depending on whether they are within the bounds of the \code{y} quantiles.}
 }
@@ -123,6 +137,11 @@ superimposed on the bars.
 Same as \code{ppc_bars()} but a separate plot (facet) is generated for each
 level of a grouping variable.
 }
+\item{\code{ppc_bars_data()}}{
+Data-preparation back end for \code{ppc_bars()} and \code{ppc_bars_grouped()}.
+Users can call \code{ppc_bars_data()} directly to obtain the prepared data
+frame and create custom visualizations with \strong{ggplot2}.
+}
 \item{\code{ppc_rootogram()}}{
 Rootograms allow for diagnosing problems in count data models such as
 overdispersion or excess zeros. In \code{standing}, \code{hanging}, and \code{suspended}
@@ -154,6 +173,10 @@ using \code{discrete} style is suggested.
 \strong{All of the rootograms are plotted on the square root scale}. See Kleiber
 and Zeileis (2016) for advice on interpreting rootograms and selecting
 among the different styles.
+}
+\item{\code{ppc_rootogram_grouped()}}{
+Same as \code{ppc_rootogram()} but a separate plot (facet) is generated for each
+level of a grouping variable.
 }
 }
 }
@@ -244,6 +267,12 @@ ppc_rootogram(y, yrep, style = "hanging", prob = 0.8)
 ppc_rootogram(y, yrep, style = "suspended")
 ppc_rootogram(y, yrep, style = "discrete")
 
+# rootograms for counts with groups
+group <- gl(2, 50, length = 100, labels = c("GroupA", "GroupB"))
+ppc_rootogram_grouped(y, yrep, group)
+ppc_rootogram_grouped(y, yrep, group, style = "hanging", facet_args = list(nrow = 2))
+ppc_rootogram_grouped(y, yrep, group, style = "discrete", prob = 0.5)
+
 }
 \references{
 Kleiber, C. and Zeileis, A. (2016).
@@ -252,7 +281,8 @@ Visualizing count data regressions using rootograms.
 \url{https://arxiv.org/abs/1605.01311}.
 }
 \seealso{
-Other PPCs: 
+Other PPCs:
+\code{\link{PPC-calibration}},
 \code{\link{PPC-censoring}},
 \code{\link{PPC-distributions}},
 \code{\link{PPC-errors}},

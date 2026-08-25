@@ -1,3 +1,65 @@
+# bayesplot 1.16.0
+
+### New plots and plotting capabilities
+
+* `mcmc_dots()` and `mcmc_dots_by_chain()` are new quantile dot plots for
+  MCMC draws. All dot-plot functions now default to `quantiles = 100`.
+  @behramulukir (#402)
+* `ppc_calibration()` and the new grouped, overlay, LOO, and `_data()`
+  variants provide calibration plots for models with binary outcomes.
+  @TeemuSailynoja and @florence-bockting (#352)
+* `ppc_loo_pit_ecdf()`, `ppc_pit_ecdf()`, and
+  `ppc_pit_ecdf_grouped()` gain `method = "correlated"` for
+  dependence-aware uniformity tests and visualization of influential ECDF
+  regions. The existing `"independent"` method remains the default but is
+  superseded. @florence-bockting (#428)
+* `ppc_rootogram_grouped()` is a new grouped and faceted rootogram supporting
+  all existing rootogram styles. @behramulukir and @jgabry (#419)
+* `ppd_*()` distribution and test-statistic functions gain `show_marginal` for
+  adding the marginal predictive distribution; defaults are unchanged.
+  @mattansb (#425)
+
+### Other improvements and behavior changes
+
+* `mcmc_areas()`, `mcmc_areas_ridges()`, `mcmc_dens()`,
+  `mcmc_dens_chains()`, and `mcmc_dens_overlay()` gain a `bounds` argument
+  for bounded density estimation, as do their `_data()` companions and the
+  PPC and PPD density functions. @VisruthSK (#317)
+* `mcmc_trace()` now officially supports the `highlight` and `alpha`
+  arguments for highlighting a chain with lines. @jgabry (#552)
+* `ppc_*()` and `ppd_*()` functions now accept `posterior::draws` objects for
+  predictive draws. @ishaan-arora-1 (#542)
+* `ppc_ecdf_overlay()`, `ppc_ecdf_overlay_grouped()`, and
+  `ppd_ecdf_overlay()` now always draw ECDFs as step functions; their
+  `discrete` argument is deprecated. @utkarshpawade (#259)
+* `prepare_mcmc_array()` now warns rather than errors when draws contain
+  `NA`s, allowing MCMC plots of ragged arrays padded with missing values. It
+  also rejects unequal chain lengths and mismatched parameter names that
+  could previously corrupt or misalign draws. @utkarshpawade
+  (#250, #498, #528)
+
+### Bug fixes and compatibility
+
+* Improved compatibility with ggplot2 4.0 and current dplyr and tidyselect
+  releases, eliminating deprecation and small-group warnings and fixing
+  linetype legends. @jgabry, @BjarkeHautop, @ishaan-arora-1, and
+  @utkarshpawade (#410, #412, #414, #442, #446, #448, #450, #458, #468)
+* `mcmc_pairs()` now correctly marks divergences and maximum-treedepth hits in
+  every panel; a regression introduced in bayesplot 1.10.0 could omit or
+  misassign them. @jgabry (#555)
+* `nuts_params()` preserves array dimensions when a single parameter is
+  selected from a `CmdStanMCMC` object and gives clear errors for empty or
+  zero-row list inputs. @utkarshpawade (#530, #534)
+* `ppc_loo_pit_data()` now validates user-supplied `pit` values at the entry
+  point and rejects nonnumeric, missing, or out-of-range inputs.
+  @utkarshpawade (#503)
+
+
+There were many other non user-facing changes, including internal refactoring
+and improved test coverage. The full changelog can be found at:
+https://github.com/stan-dev/bayesplot/compare/v1.15.0...v1.16.0
+
+
 # bayesplot 1.15.0
 
 * Add `shape` argument to `mcmc_scatter` by @behramulukir (#375)
@@ -12,7 +74,7 @@
 
 # bayesplot 1.14.0
 
-* PPC "avg" functions (`ppc_scatter_avg()`, `ppc_error_scatter_avg()`, etc.) gain a `stat` argument 
+* PPC "avg" functions (`ppc_scatter_avg()`, `ppc_error_scatter_avg()`, etc.) gain a `stat` argument
   to set the averaging function. (Suggestion of #348, @kruschke).
 * `ppc_error_scatter_avg_vs_x(x = some_expression)` labels the x axis with `some_expression`.
 * New quantile dot plot functions `ppc_dots()` and `ppd_dots()` by @behramulukir (#357)
@@ -34,7 +96,7 @@
 
 * Expand checking workflows to more platforms by @andrjohns (#324)
 * Skip tests depending on Suggested dependency rstantools if not installed by @MichaelChirico (#325)
-* Skip tests depending on Suggested dependency gridExtra if not installed by @MichaelChirico (#326) 
+* Skip tests depending on Suggested dependency gridExtra if not installed by @MichaelChirico (#326)
 * Fix missing legends for unobserved levels in rhat and neff plots (#328)
 * Document problems with `ppc_stat` with `stat="mean"` (#329)
 * Ensure rank overlay plot starts at 0 even if not all bins present, thanks @sims1253 (#332)

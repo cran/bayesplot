@@ -49,12 +49,13 @@ ppc_scatter_avg_data(y, yrep, group = NULL, stat = "mean")
 \item{y}{A vector of observations. See \strong{Details}.}
 
 \item{yrep}{An \code{S} by \code{N} matrix of draws from the posterior (or prior)
-predictive distribution. The number of rows, \code{S}, is the size of the
-posterior (or prior) sample used to generate \code{yrep}. The number of columns,
-\code{N} is the number of predicted observations (\code{length(y)}). The columns of
-\code{yrep} should be in the same order as the data points in \code{y} for the plots
-to make sense. See the \strong{Details} and \strong{Plot Descriptions} sections for
-additional advice specific to particular plots.}
+predictive distribution, or a \code{\link[posterior:draws]{posterior::draws}} object. The number of
+rows, \code{S}, is the size of the posterior (or prior) sample used to generate
+\code{yrep}. The number of columns, \code{N} is the number of predicted observations
+(\code{length(y)}). The columns of \code{yrep} should be in the same order as the
+data points in \code{y} for the plots to make sense. See the \strong{Details} and
+\strong{Plot Descriptions} sections for additional advice specific to particular
+plots.}
 
 \item{...}{Currently unused.}
 
@@ -116,6 +117,14 @@ is a summary statistic. Unlike for \code{ppc_scatter()}, for
 The same as \code{ppc_scatter_avg()}, but a separate plot is generated for
 each level of a grouping variable.
 }
+\item{\code{ppc_scatter_data()}, \code{ppc_scatter_avg_data()}}{
+Data-preparation back ends for the \verb{ppc_scatter*()} family of plotting
+functions. \code{ppc_scatter_data()} returns a data frame with one row per
+observation per \code{yrep} draw, while \code{ppc_scatter_avg_data()} returns a
+data frame with one row per observation summarising \code{yrep} draws with
+the chosen \code{stat}. Users can call these functions directly to create
+custom visualizations with \strong{ggplot2}.
+}
 }
 }
 
@@ -154,7 +163,8 @@ A., and Rubin, D. B. (2013). \emph{Bayesian Data Analysis.} Chapman & Hall/CRC
 Press, London, third edition. (Ch. 6)
 }
 \seealso{
-Other PPCs: 
+Other PPCs:
+\code{\link{PPC-calibration}},
 \code{\link{PPC-censoring}},
 \code{\link{PPC-discrete}},
 \code{\link{PPC-distributions}},

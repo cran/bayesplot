@@ -14,6 +14,25 @@ test_that("mcmc_trace returns a ggplot object", {
   expect_gg(mcmc_trace(chainlist1))
 })
 
+test_that("mcmc_trace highlights a chain with lines", {
+  expect_no_warning(
+    p <- mcmc_trace(arr, pars = "sigma", highlight = 2, alpha = 0.4)
+  )
+
+  expect_s3_class(p$layers[[1]]$geom, "GeomLine")
+  expect_equal(p$data$highlight, p$data$chain == 2)
+  expect_equal(p$scales$get_scales("alpha")$palette(2), c(0.4, 1))
+})
+
+test_that("mcmc_trace shows divergences when highlighting a chain", {
+  np <- rep_len(c(0, 1), nrow(arr))
+  p <- mcmc_trace(arr, pars = "sigma", highlight = 2, np = np)
+
+  expect_s3_class(p$layers[[1]]$geom, "GeomLine")
+  expect_s3_class(p$layers[[2]]$geom, "GeomRug")
+  expect_named(p$layers[[2]]$data, "Divergent")
+})
+
 # functions that require multiple chains ----------------------------------
 test_that("mcmc_trace_highlight returns a ggplot object", {
   expect_gg(mcmc_trace_highlight(arr, regex_pars = c("beta", "x\\:")))
@@ -100,7 +119,44 @@ test_that("mcmc_trace 'np' argument works", {
                  "No divergences to plot.")
 })
 
+# mcmc_trace_data ----------------------------------------------------
 
+test_that("mcmc_trace_data returns plotting data with expected columns", {
+  d <- mcmc_trace_data(arr, pars = "beta[1]")
+  expect_s3_class(d, "tbl_df")
+  expect_named(
+    d,
+    c(
+      "parameter", "value", "value_rank", "iteration", "chain",
+      "n_chains", "n_iterations", "n_parameters", "highlight", "warmup"
+    )
+  )
+  expect_equal(nrow(d), dim(arr)[1] * dim(arr)[2])
+})
+
+test_that("mcmc_trace_data highlight argument works", {
+  d <- mcmc_trace_data(arr, pars = "beta[1]", highlight = 2)
+  expect_true(all(d$highlight[d$chain == 2]))
+  expect_true(all(!d$highlight[d$chain != 2]))
+})
+
+test_that("mcmc_trace_data warmup labeling works", {
+  d <- mcmc_trace_data(arr, pars = "beta[1]", n_warmup = 20)
+  expect_true(all(d$warmup[d$iteration <= 20]))
+  expect_true(all(!d$warmup[d$iteration > 20]))
+})
+
+test_that("mcmc_trace_data iter1 shifts iterations", {
+  d <- mcmc_trace_data(arr, pars = "beta[1]", iter1 = 100)
+  expect_true(min(d$iteration) == 101)
+})
+
+test_that("mcmc_trace_data computes value_rank within each parameter", {
+  d <- mcmc_trace_data(arr, pars = c("beta[1]", "beta[2]"))
+  observed_ranks <- split(d$value_rank, d$parameter)
+  expected_ranks <- lapply(split(d$value, d$parameter), rank, ties.method = "average")
+  expect_equal(observed_ranks, expected_ranks)
+})
 
 
 # Visual tests -----------------------------------------------------------------
@@ -126,6 +182,33 @@ test_that("mcmc_trace renders correctly", {
   vdiffr::expect_doppelganger("mcmc_trace (one parameter)", p_one_param)
   vdiffr::expect_doppelganger("mcmc_trace (warmup window)", p_warmup)
   vdiffr::expect_doppelganger("mcmc_trace (iter1 offset)", p_iter1)
+})
+
+# https://github.com/stan-dev/bayesplot/issues/250
+test_that("mcmc_trace renders correctly with NAs in draws", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("vdiffr")
+  skip_on_r_oldrel()
+
+  set.seed(250)
+  draws_full_na <- array(
+    rnorm(500 * 4 * 2),
+    dim = c(500, 4, 2),
+    dimnames = list(NULL, NULL, c("theta[1,3]", "theta[2,3]"))
+  )
+  draws_full_na[, , "theta[2,3]"] <- NA
+
+  draws_partial_na <- draws_full_na
+  draws_partial_na[, , "theta[2,3]"] <- rnorm(500 * 4)
+  draws_partial_na[10:100, , "theta[2,3]"] <- NA
+
+  suppressWarnings({
+    p_full_na <- mcmc_trace(draws_full_na)
+    p_partial_na <- mcmc_trace(draws_partial_na)
+  })
+
+  vdiffr::expect_doppelganger("mcmc_trace (NA parameter)", p_full_na)
+  vdiffr::expect_doppelganger("mcmc_trace (partial NA parameter)", p_partial_na)
 })
 
 test_that("mcmc_rank_overlay renders correctly", {

@@ -131,6 +131,58 @@ test_that("mcmc_pairs works with NUTS info", {
 })
 
 
+test_that("mcmc_pairs panels show their own divergences and treedepth hits", {
+  #https://github.com/stan-dev/bayesplot/issues/555
+  skip_if_not_installed("gridExtra")
+
+  set.seed(42)
+  n_iter <- 100
+  n_chain <- 4
+  x2 <- array(rnorm(n_iter * n_chain * 2), dim = c(n_iter, n_chain, 2),
+              dimnames = list(NULL, NULL, c("alpha", "beta")))
+
+  # divergences in chains 2 (25) and 4 (4), max treedepth hits in chain 1 (10),
+  # each at distinctive locations so we can check they're plotted correctly
+  x2[1:25, 2, ] <- 50
+  x2[1:4, 4, ] <- -50
+  x2[1:10, 1, ] <- 80
+
+  divergent <- treedepth <- matrix(0, nrow = n_iter, ncol = n_chain)
+  divergent[1:25, 2] <- 1
+  divergent[1:4, 4] <- 1
+  treedepth[1:10, 1] <- 10
+  np2 <- data.frame(
+    Iteration = rep(seq_len(n_iter), times = 2 * n_chain),
+    Parameter = rep(c("divergent__", "treedepth__"), each = n_iter * n_chain),
+    Value = c(divergent, treedepth),
+    Chain = rep(rep(seq_len(n_chain), each = n_iter), times = 2)
+  )
+
+  p <- mcmc_pairs(x2, np = np2, max_treedepth = 9,
+                  condition = pairs_condition(chains = list(1:2, 3:4)))
+
+  nuts_points <- function(gg, color) {
+    b <- ggplot2::ggplot_build(gg)
+    d <- do.call(rbind, lapply(b$data, function(l) l[, c("x", "colour")]))
+    d[!is.na(d$colour) & d$colour == color, ]
+  }
+
+  # panel 2 is above the diagonal (chains 1:2), panel 3 below (chains 3:4)
+  divs_upper <- nuts_points(p$bayesplots[[2]], "red")
+  divs_lower <- nuts_points(p$bayesplots[[3]], "red")
+  expect_equal(nrow(divs_upper), 25)
+  expect_equal(nrow(divs_lower), 4)
+  expect_true(all(divs_upper$x == 50))
+  expect_true(all(divs_lower$x == -50))
+
+  td_upper <- nuts_points(p$bayesplots[[2]], "yellow2")
+  td_lower <- nuts_points(p$bayesplots[[3]], "yellow2")
+  expect_equal(nrow(td_upper), 10)
+  expect_equal(nrow(td_lower), 0)
+  expect_true(all(td_upper$x == 80))
+})
+
+
 test_that("mcmc_pairs throws correct warnings and errors", {
   skip_if_not_installed("rstanarm")
 
@@ -313,11 +365,18 @@ test_that("pairs_condition message if multiple args specified", {
 })
 
 
-
 # mcmc_parcoord -----------------------------------------------------------
 test_that("mcmc_parcoord returns a ggplot object", {
   expect_gg(mcmc_parcoord(arr, pars = c("(Intercept)", "sigma")))
   expect_gg(mcmc_parcoord(arr, pars = "sigma", regex_pars = "beta"))
+})
+
+test_that("mcmc_parcoord uses the expected x-axis expansion", {
+  built <- ggplot2::ggplot_build(
+    mcmc_parcoord(example_mcmc_draws(), pars = c("beta[1]", "beta[2]", "sigma"))
+  )
+
+  expect_equal(built$layout$panel_params[[1]]$x.range, c(1, 3.25))
 })
 
 test_that("mcmc_parcoord with nuts info returns a ggplot object", {
@@ -343,7 +402,6 @@ test_that("mcmc_parcoord throws correct warnings and errors", {
   )
 })
 
-
 # parcoord_style_np -------------------------------------------------------
 test_that("parcoord_style_np returns correct structure", {
   style <- parcoord_style_np()
@@ -365,6 +423,42 @@ test_that("parcoord_style_np throws correct errors", {
     "unused argument (td_color = 1)",
     fixed = TRUE
   )
+})
+
+# mcmc_parcoord_data -------------------------------------------------
+
+test_that("mcmc_parcoord_data returns expected structure", {
+  d <- mcmc_parcoord_data(arr, pars = c("(Intercept)", "sigma"))
+  expect_s3_class(d, "data.frame")
+  expect_named(d, c("Draw", "Parameter", "Value", "Divergent"))
+
+  draws_by_parameter <- split(d$Draw, d$Parameter)
+  expected_draws <- seq_len(dim(arr)[1] * dim(arr)[2])
+  expect_equal(draws_by_parameter[[1]], expected_draws)
+  expect_equal(draws_by_parameter[[2]], expected_draws)
+})
+
+test_that("mcmc_parcoord_data sets Divergent to 0 when np is NULL", {
+  d <- mcmc_parcoord_data(arr, pars = c("(Intercept)", "sigma"))
+  expect_true(all(d$Divergent == 0))
+})
+
+test_that("mcmc_parcoord_data joins divergence information from np", {
+  fake_np <- data.frame(
+    Iteration = rep(seq_len(dim(arr)[1]), each = dim(arr)[2]),
+    Chain = rep(seq_len(dim(arr)[2]), times = dim(arr)[1]),
+    Parameter = factor("divergent__"),
+    Value = as.integer(rep(c(0, 1, 0, 1), times = dim(arr)[1]))
+  )
+  d <- mcmc_parcoord_data(arr, pars = c("(Intercept)", "sigma"), np = fake_np)
+
+  expect_false(anyNA(d$Divergent))
+  expect_equal(sum(d$Divergent == 1), 400)
+  expect_equal(sum(d$Divergent == 0), 400)
+})
+
+test_that("mcmc_parcoord_data errors with fewer than 2 parameters", {
+  expect_error(mcmc_parcoord_data(arr, pars = "sigma"), "at least two")
 })
 
 

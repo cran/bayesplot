@@ -94,7 +94,7 @@ similar functions. Examples of using \code{pars} in this way can be found on the
 \item{regex_pars}{An optional \link[base:grep]{regular expression} to use for
 parameter selection. Can be specified instead of \code{pars} or in addition to
 \code{pars}. When using \code{pars} for tidy parameter selection, the \code{regex_pars}
-argument is ignored since \link[tidyselect:language]{select helpers}
+argument is ignored since \link[tidyselect:select_helpers]{select helpers}
 perform a similar function.}
 
 \item{transformations}{Optionally, transformations to apply to parameters
@@ -302,18 +302,18 @@ p +
    )
 
 # add ellipse
-p + stat_ellipse(level = 0.9, color = "gray20", size = 1)
+p + stat_ellipse(level = 0.9, color = "gray20", linewidth = 1)
 
 # add contour
 color_scheme_set("red")
 p2 <- mcmc_scatter(x, pars = c("alpha", "sigma"), size = 3.5, alpha = 0.25)
-p2 + stat_density_2d(color = "black", size = .5)
+p2 + stat_density_2d(color = "black", linewidth = .5)
 
 # can also add lines/smooths
 color_scheme_set("pink")
 (p3 <- mcmc_scatter(x, pars = c("alpha", "beta[3]"), alpha = 0.25, size = 3))
 p3 + geom_smooth(method = "lm", se = FALSE, color = "gray20",
-                 size = .75, linetype = 2)
+                 linewidth = .75, linetype = 2)
 
 \donttest{
 if (requireNamespace("hexbin", quietly = TRUE)) {
@@ -415,7 +415,7 @@ Gelman, A. (2019), Visualization in Bayesian workflow.
 \href{https://github.com/jgabry/bayes-vis-paper}{code on GitHub})
 }
 \seealso{
-Other MCMC: 
+Other MCMC:
 \code{\link{MCMC-combos}},
 \code{\link{MCMC-diagnostics}},
 \code{\link{MCMC-distributions}},

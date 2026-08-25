@@ -68,12 +68,13 @@ ppc_stat_data(y, yrep, group = NULL, stat)
 \item{y}{A vector of observations. See \strong{Details}.}
 
 \item{yrep}{An \code{S} by \code{N} matrix of draws from the posterior (or prior)
-predictive distribution. The number of rows, \code{S}, is the size of the
-posterior (or prior) sample used to generate \code{yrep}. The number of columns,
-\code{N} is the number of predicted observations (\code{length(y)}). The columns of
-\code{yrep} should be in the same order as the data points in \code{y} for the plots
-to make sense. See the \strong{Details} and \strong{Plot Descriptions} sections for
-additional advice specific to particular plots.}
+predictive distribution, or a \code{\link[posterior:draws]{posterior::draws}} object. The number of
+rows, \code{S}, is the size of the posterior (or prior) sample used to generate
+\code{yrep}. The number of columns, \code{N} is the number of predicted observations
+(\code{length(y)}). The columns of \code{yrep} should be in the same order as the
+data points in \code{y} for the plots to make sense. See the \strong{Details} and
+\strong{Plot Descriptions} sections for additional advice specific to particular
+plots.}
 
 \item{stat}{A single function or a string naming a function, except for the
 2D plot which requires a vector of exactly two names or functions. In all
@@ -87,19 +88,19 @@ then generic naming is used in the legend.}
 \item{discrete}{For \code{ppc_stat()} and \code{ppc_stat_grouped()}, if \code{TRUE} then a
 bar chart is used instead of a histogram.}
 
-\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}, \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}},
+and \code{\link[ggdist:stat_dots]{ggdist::stat_dots()}} to override the default binwidth.}
 
-\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} and \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}
+to override the default binning.}
 
-\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an
-alternative to \code{binwidth}.}
+\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an alternative to
+\code{binwidth}.}
 
-\item{freq}{For histograms, \code{freq=TRUE} (the default) puts count on the
-y-axis. Setting \code{freq=FALSE} puts density on the y-axis. (For many
-plots the y-axis text is off by default. To view the count or density
-labels on the y-axis see the \code{\link[=yaxis_text]{yaxis_text()}} convenience
+\item{freq}{For histograms and frequency polygons, \code{freq=TRUE} (the default)
+puts count on the y-axis. Setting \code{freq=FALSE} puts density on the y-axis.
+(For many plots the y-axis text is off by default. To view the count or
+density labels on the y-axis see the \code{\link[=yaxis_text]{yaxis_text()}} convenience
 function.)}
 
 \item{group}{A grouping variable of the same length as \code{y}.
@@ -158,6 +159,13 @@ usage of \code{ppc_stat_grouped()} can be found in Gabry et al. (2019).
 A scatterplot showing the joint distribution of two statistics
 computed over the datasets (rows) in \code{yrep}. The value of the
 statistics in the observed data is overlaid as large point.
+}
+\item{\code{ppc_stat_data()}}{
+Data-preparation back end for \code{ppc_stat()}, \code{ppc_stat_freqpoly()}, and
+their grouped variants. Users can call \code{ppc_stat_data()} directly to
+obtain the data frame of test-statistic values computed from \code{y} and
+each row of \code{yrep}, enabling custom test-statistic visualizations with
+\strong{ggplot2}.
 }
 }
 }
@@ -227,7 +235,8 @@ A., and Rubin, D. B. (2013). \emph{Bayesian Data Analysis.} Chapman & Hall/CRC
 Press, London, third edition. (Ch. 6)
 }
 \seealso{
-Other PPCs: 
+Other PPCs:
+\code{\link{PPC-calibration}},
 \code{\link{PPC-censoring}},
 \code{\link{PPC-discrete}},
 \code{\link{PPC-distributions}},

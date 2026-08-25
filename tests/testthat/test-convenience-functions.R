@@ -63,7 +63,7 @@ test_that("lbub works", {
 
 # plot and facet backgrounds ----------------------------------------------
 test_that("grid_lines returns correct theme object", {
-  thm <- theme_default() + grid_lines(size = 1.5, color = "purple")
+  thm <- theme_default() + grid_lines(linewidth = 1.5, color = "purple")
   expect_equal(thm$panel.grid.major, element_line(linewidth = 1.5, color = "purple"))
   expect_equal(thm$panel.grid.minor, element_line(linewidth = 0.75, color = "purple"))
 })
@@ -118,6 +118,13 @@ test_that("legend_text returns correct theme object", {
   expect_equal(
     legend_text(size = 16, color = "purple"),
     theme(legend.text = element_text(color = "purple", size = 16))
+  )
+})
+test_that("legend_move('none') behaves like legend_none", {
+  expect_equal(
+    legend_move("none")$legend.position,
+    legend_none()$legend.position,
+    ignore_attr = TRUE
   )
 })
 
@@ -186,8 +193,6 @@ test_that("overlay_function returns the correct object", {
   a$constructor <- b$constructor <- NULL
   expect_equal(a, b, ignore_function_env = TRUE)
 })
-
-
 # tagged functions  -------------------------------------------------------
 
 test_that("as_tagged_function handles bare function (symbol)", {

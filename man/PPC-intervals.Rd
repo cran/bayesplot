@@ -88,12 +88,13 @@ ppc_ribbon_data(
 \item{y}{A vector of observations. See \strong{Details}.}
 
 \item{yrep}{An \code{S} by \code{N} matrix of draws from the posterior (or prior)
-predictive distribution. The number of rows, \code{S}, is the size of the
-posterior (or prior) sample used to generate \code{yrep}. The number of columns,
-\code{N} is the number of predicted observations (\code{length(y)}). The columns of
-\code{yrep} should be in the same order as the data points in \code{y} for the plots
-to make sense. See the \strong{Details} and \strong{Plot Descriptions} sections for
-additional advice specific to particular plots.}
+predictive distribution, or a \code{\link[posterior:draws]{posterior::draws}} object. The number of
+rows, \code{S}, is the size of the posterior (or prior) sample used to generate
+\code{yrep}. The number of columns, \code{N} is the number of predicted observations
+(\code{length(y)}). The columns of \code{yrep} should be in the same order as the
+data points in \code{y} for the plots to make sense. See the \strong{Details} and
+\strong{Plot Descriptions} sections for additional advice specific to particular
+plots.}
 
 \item{x}{A numeric vector to use as the x-axis
 variable. For example, \code{x} could be a predictor variable from a
@@ -108,10 +109,10 @@ are \code{prob=0.5} and \code{prob_outer=0.9}.}
 
 \item{alpha, size, fatten, linewidth}{Arguments passed to geoms. For ribbon
 plots \code{alpha} is passed to \code{\link[ggplot2:geom_ribbon]{ggplot2::geom_ribbon()}} to control the opacity
-of the outer ribbon and \code{size} is passed to \code{\link[ggplot2:geom_path]{ggplot2::geom_line()}} to
+of the outer ribbon and \code{size} is passed to \code{\link[ggplot2:geom_line]{ggplot2::geom_line()}} to
 control the size of the line representing the median prediction (\code{size=0}
 will remove the line). For interval plots \code{alpha}, \code{size}, \code{fatten}, and
-\code{linewidth} are passed to \code{\link[ggplot2:geom_linerange]{ggplot2::geom_pointrange()}} (\code{fatten=0} will
+\code{linewidth} are passed to \code{\link[ggplot2:geom_pointrange]{ggplot2::geom_pointrange()}} (\code{fatten=0} will
 remove the point estimates).}
 
 \item{group}{A grouping variable of the same length as \code{y}.
@@ -157,6 +158,13 @@ to read than the other.
 \item{\verb{ppc_intervals_grouped(), ppc_ribbon_grouped()}}{
 Same as \code{ppc_intervals()} and \code{ppc_ribbon()}, respectively, but a
 separate plot (facet) is generated for each level of a grouping variable.
+}
+\item{\code{ppc_intervals_data()}, \code{ppc_ribbon_data()}}{
+Data-preparation back end for \code{ppc_intervals()}, \code{ppc_ribbon()}, and
+their grouped variants. \code{ppc_ribbon_data()} is an alias for
+\code{ppc_intervals_data()}. Users can call either function directly to
+obtain the prepared data frame and create custom interval or ribbon
+visualizations with \strong{ggplot2}.
 }
 }
 }
@@ -239,7 +247,8 @@ A., and Rubin, D. B. (2013). \emph{Bayesian Data Analysis.} Chapman & Hall/CRC
 Press, London, third edition. (Ch. 6)
 }
 \seealso{
-Other PPCs: 
+Other PPCs:
+\code{\link{PPC-calibration}},
 \code{\link{PPC-censoring}},
 \code{\link{PPC-discrete}},
 \code{\link{PPC-distributions}},

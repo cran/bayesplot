@@ -50,16 +50,16 @@ mcmc_acf_bar(
 
 \item{size}{Optional values to override \code{\link[ggplot2:geom_point]{ggplot2::geom_point()}}'s
 default size (for \code{mcmc_rhat()}, \code{mcmc_neff()}) or
-\code{\link[ggplot2:geom_path]{ggplot2::geom_line()}}'s default line width (for \code{mcmc_acf()}).}
+\code{\link[ggplot2:geom_line]{ggplot2::geom_line()}}'s default line width (for \code{mcmc_acf()}).}
 
-\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{binwidth}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}, \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}},
+and \code{\link[ggdist:stat_dots]{ggdist::stat_dots()}} to override the default binwidth.}
 
-\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} to override
-the default binwidth.}
+\item{bins}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} and \code{\link[ggplot2:geom_area]{ggplot2::geom_area()}}
+to override the default binning.}
 
-\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an
-alternative to \code{binwidth}.}
+\item{breaks}{Passed to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}} as an alternative to
+\code{binwidth}.}
 
 \item{ratio}{A vector of \emph{ratios} of effective sample size estimates to
 total sample size. See \code{\link[=neff_ratio]{neff_ratio()}}.}
@@ -85,7 +85,7 @@ similar functions. Examples of using \code{pars} in this way can be found on the
 \item{regex_pars}{An optional \link[base:grep]{regular expression} to use for
 parameter selection. Can be specified instead of \code{pars} or in addition to
 \code{pars}. When using \code{pars} for tidy parameter selection, the \code{regex_pars}
-argument is ignored since \link[tidyselect:language]{select helpers}
+argument is ignored since \link[tidyselect:select_helpers]{select helpers}
 perform a similar function.}
 
 \item{facet_args}{A named list of arguments (other than \code{facets}) passed
@@ -111,6 +111,13 @@ also \link{MCMC-nuts} for additional MCMC diagnostic plots.
 \section{Plot Descriptions}{
 
 \describe{
+\item{\code{mcmc_rhat_data()}, \code{mcmc_neff_data()}}{
+Data-preparation back ends for the R-hat and effective sample size plots.
+Users can call these functions directly to obtain the data frame of
+diagnostic values with rating labels and create custom diagnostic
+visualizations with \strong{ggplot2}.
+}
+
 \item{\code{mcmc_rhat()}, \code{mcmc_rhat_hist()}}{
 Rhat values as either points or a histogram. Values are colored using
 different shades (lighter is better). The chosen thresholds are somewhat
@@ -156,7 +163,7 @@ color_scheme_set("pink")
 (p <- mcmc_acf_bar(x, pars = c("alpha", "beta[1]")))
 
 # add horiztonal dashed line at 0.5
-p + hline_at(0.5, linetype = 2, size = 0.15, color = "gray")
+p + hline_at(0.5, linetype = 2, linewidth = 0.15, color = "gray")
 }
 
 # fake rhat values to use for demonstration
@@ -222,7 +229,7 @@ vignette.
 using the No-U-Turn-Sampler.
 }
 
-Other MCMC: 
+Other MCMC:
 \code{\link{MCMC-combos}},
 \code{\link{MCMC-distributions}},
 \code{\link{MCMC-intervals}},

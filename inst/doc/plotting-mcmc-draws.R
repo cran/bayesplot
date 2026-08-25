@@ -114,3 +114,7 @@ mcmc_trace(posterior, pars = "(Intercept)")
 ## ----mcmc_trace_highlight-----------------------------------------------------
 mcmc_trace_highlight(posterior, pars = "sigma", highlight = 3)
 
+## ----data_intervals_mcmc------------------------------------------------------
+d <- mcmc_intervals_data(posterior, pars = c("(Intercept)", "sigma"))
+d
+

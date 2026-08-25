@@ -21,12 +21,25 @@
 #'   [ggplot2::geom_density()], respectively. For `ppc_loo_intervals()`, `size`
 #'   `linewidth` and `fatten` are passed to [ggplot2::geom_pointrange()]. For
 #'   `ppc_loo_ribbon()`, `alpha` and `size`  are passed to
-#'   [ggplot2::geom_ribbon()].
+#'   [ggplot2::geom_ribbon()]. For `ppc_loo_pit_ecdf()`, linewidth for the ECDF plot. When
+#'   `method = "correlated"`, defaults to 0.3. When `method = "independent"`,
+#'   if `NULL` no linewidth is specified for the ECDF line.
 #'
-#' @template return-ggplot
+#' @template return-ggplot-or-data
 #'
 #' @section Plot Descriptions:
 #' \describe{
+#' \item{`ppc_loo_pit_data()`}{
+#'  This function prepares LOO-PIT data for plotting with **ggplot2**. It is
+#'  the data-preparation back end for the LOO-PIT plotting functions
+#'  (`ppc_loo_pit_overlay()`, `ppc_loo_pit_qq()`, and `ppc_loo_pit_ecdf()`),
+#'  and users can call it directly to create custom LOO-PIT plots using
+#'  ggplot2. The function computes the leave-one-out probability integral
+#'  transform (LOO-PIT) values and returns a data frame that can be used to
+#'  build ggplot objects. This is useful when you want to create custom
+#'  visualizations of LOO-PIT values beyond what the built-in plotting
+#'  functions provide.
+#' }
 #' \item{`ppc_loo_pit_overlay()`, `ppc_loo_pit_qq()`, `ppc_loo_pit_ecdf()`}{
 #'  The calibration of marginal predictions can be assessed using probability
 #'  integral transformation (PIT) checks. LOO improves the check by avoiding the
@@ -54,12 +67,16 @@
 #'  Q-Q plot.
 #'
 #'  The `ppc_loo_pit_ecdf()` function visualizes the empirical cumulative
-#'  distribution function (ECDF) of the LOO PITs overlaid with simultaneous
-#'  confidence intervals for a standard uniform sample. For large samples,
-#'  these confidence intervals are visually very narrow. Setting the
-#'  `plot_diff` argument to `TRUE` transforms the plot to display the
-#'  difference of the ECDF and the theoretical expectation, which can aid in
-#'  the visual assessment of calibration.
+#'  distribution function (ECDF) of the LOO PIT values.
+#'  With `method = "independent"`, the plot overlays `100 * prob`%
+#'  simultaneous confidence intervals for a standard uniform sample.
+#'  With `method = "correlated"`, the plot uses a dependence-aware
+#'  uniformity assessment and can highlight suspicious regions.
+#'  Setting `plot_diff = TRUE` displays the ECDF minus the theoretical
+#'  expectation, which can improve visual assessment of calibration. 
+#'  Note that the default "independent" method is **superseded** by
+#'  the "correlated" method (Tesso & Vehtari, 2026) which accounts for dependent
+#'  LOO-PIT values.
 #' }
 #' \item{`ppc_loo_intervals()`, `ppc_loo_ribbon()`}{
 #'  Similar to [ppc_intervals()] and [ppc_ribbon()] but the intervals are for
@@ -125,10 +142,10 @@ NULL
 #' @rdname PPC-loo
 #' @export
 #' @param pit For `ppc_loo_pit_overlay()`, `ppc_loo_pit_qq()`, and
-#'   `ppc_loo_pit_ecdf()` optionally a vector of precomputed PIT values that
-#'   can be specified instead of `y`, `yrep`, and `lw` (these are all ignored
-#'   if `pit` is specified). If not specified the PIT values are computed
-#'   internally before plotting.
+#'   `ppc_loo_pit_ecdf()`, an optional vector of precomputed LOO-PIT values
+#'   (length `length(y)`, values in `[0, 1]`). If supplied, `y`, `yrep`, and
+#'   `lw` / `psis_object` are ignored. If `NULL` (default), LOO-PIT values are
+#'   computed internally.
 #' @param samples For `ppc_loo_pit_overlay()`, the number of data sets (each
 #'   the same size as `y`) to simulate from the standard uniform
 #'   distribution. The default is 100. The density estimate of each dataset is
@@ -141,7 +158,8 @@ NULL
 #'   calculated from the PIT values to the theoretical standard normal
 #'   quantiles.
 #' @param trim Passed to [ggplot2::stat_density()].
-#' @template args-density-controls
+#' @param bw,adjust,kernel,n_dens Optional arguments passed to
+#'   [stats::density()] to override the defaults.
 #' @param boundary_correction For `ppc_loo_pit_overlay()`, when set to `TRUE`
 #'   (the default) the function will compute boundary corrected density values
 #'   via convolution and a Gaussian filter, also known as the reflection method
@@ -169,12 +187,16 @@ ppc_loo_pit_overlay <- function(y,
                                 alpha = 0.7,
                                 boundary_correction = TRUE,
                                 grid_len = 512,
-                                bw = "nrd0",
+                                bw = NULL,
                                 trim = FALSE,
-                                adjust = 1,
-                                kernel = "gaussian",
-                                n_dens = 1024) {
+                                adjust = NULL,
+                                kernel = NULL,
+                                n_dens = NULL) {
   check_ignored_arguments(..., ok_args = list("moment_match"))
+  bw <- bw %||% "nrd0"
+  adjust <- adjust %||% 1
+  kernel <- kernel %||% "gaussian"
+  n_dens <- n_dens %||% 1024
 
   data <-
     ppc_loo_pit_data(
@@ -190,15 +212,14 @@ ppc_loo_pit_overlay <- function(y,
     )
 
   if (!missing(y) && all(y %in% 0:1)) {
-    warning(
+    warn(paste0(
       "This plot is not recommended for binary data. ",
       "For plots that are more suitable see ",
-      "\nhttps://avehtari.github.io/modelselection/diabetes.html#44_calibration_of_predictions",
-      call. = FALSE
-    )
+      "\nhttps://avehtari.github.io/modelselection/diabetes.html#44_calibration_of_predictions"
+    ))
   }
 
-  message(paste(
+  inform(paste(
     "NOTE: The kernel density estimate assumes continuous observations",
     "and is not optimal for discrete observations."
   ))
@@ -291,7 +312,10 @@ ppc_loo_pit_data <-
            boundary_correction = TRUE,
            grid_len = 512) {
     if (!is.null(pit)) {
-      stopifnot(is.numeric(pit), is_vector_or_1Darray(pit))
+      pit <- validate_pit(pit)
+      if (boundary_correction && length(pit) < 2L) {
+        abort("At least 2 PIT values are required when 'boundary_correction' is TRUE.")
+      }
       inform("'pit' specified so ignoring 'y','yrep','lw' if specified.")
     } else {
       suggested_package("rstantools")
@@ -337,7 +361,7 @@ ppc_loo_pit_qq <- function(y,
 
   compare <- match.arg(compare)
   if (!is.null(pit)) {
-    stopifnot(is.numeric(pit), is_vector_or_1Darray(pit))
+    pit <- validate_pit(pit)
     inform("'pit' specified so ignoring 'y','yrep','lw' if specified.")
   } else {
     suggested_package("rstantools")
@@ -382,23 +406,27 @@ ppc_loo_pit_qq <- function(y,
 
 #' @rdname PPC-loo
 #' @export
-#' @param K For `ppc_loo_pit_ecdf()` an optional integer defining the number
-#'  of equally spaced evaluation points for the PIT-ECDF. Reducing K when
-#'  using `interpolate_adj = FALSE` makes computing the confidence bands
-#'  faster. If `pit` is supplied, defaults to `length(pit)`, otherwise
-#'  `yrep` determines the maximum accuracy of the estimated PIT values and
-#'  `K` is set to `min(nrow(yrep) + 1, 1000)`.
-#' @param plot_diff For `ppc_loo_pit_ecdf()`, a boolean defining whether to
-#'   plot the difference between the observed PIT-ECDF and the theoretical
-#'   expectation for uniform PIT values rather than plotting the regular ECDF.
-#'   The default is `FALSE`, but for large samples we recommend setting
-#'   `plot_diff = TRUE` to better use the plot area.
-#' @param interpolate_adj For `ppc_loo_pit_ecdf()`, a boolean defining if the
-#'   simultaneous confidence bands should be interpolated based on precomputed
-#'   values rather than computed exactly. Computing the bands may be
-#'   computationally intensive and the approximation gives a fast method for
-#'   assessing the ECDF trajectory. The default is to use interpolation if `K`
-#'   is greater than 200.
+#' @template args-pit-ecdf
+#' @param K An optional integer defining the number of equally spaced evaluation
+#'   points for the PIT-ECDF. Reducing K when using `interpolate_adj = FALSE`
+#'   makes computing the confidence bands faster. For `ppc_loo_pit_ecdf()`,
+#'   when `method = 'independent'`. If `pit` is supplied, defaults to
+#'   `length(pit)`, otherwise `yrep` determines the maximum accuracy of the
+#'   estimated PIT values and `K` is set to `min(nrow(yrep) + 1, 1000)`.
+#' @param plot_diff A boolean defining whether to plot the difference between
+#'   the observed PIT-ECDF and the theoretical expectation for uniform PIT
+#'   values rather than plotting the regular ECDF. For `ppc_loo_pit_ecdf()`,
+#'   when `method = 'independent'`. The default is `FALSE`, but for large
+#'   samples we recommend setting `plot_diff = TRUE` to better use the plot area.
+#' @param interpolate_adj A boolean defining if the simultaneous confidence
+#'   bands should be interpolated based on precomputed values rather than
+#'   computed exactly. Computing the bands may be computationally intensive and
+#'   the approximation gives a fast method for assessing the ECDF trajectory.
+#'   For `ppc_loo_pit_ecdf()` when `method = 'independent'`.
+#'   The default is to use interpolation if `K` is greater than 200.
+#' 
+#' @references Tesso, H., & Vehtari, A. (2026). LOO-PIT predictive model 
+#' checking. arXiv preprint https://arxiv.org/abs/2603.02928.
 ppc_loo_pit_ecdf <- function(y,
                              yrep,
                              lw = NULL,
@@ -408,63 +436,73 @@ ppc_loo_pit_ecdf <- function(y,
                              K = NULL,
                              prob = .99,
                              plot_diff = FALSE,
-                             interpolate_adj = NULL) {
+                             interpolate_adj = NULL,
+                             method = NULL,
+                             test = NULL,
+                             gamma = NULL,
+                             linewidth = NULL,
+                             color = NULL,
+                             help_text = NULL,
+                             pareto_pit = NULL,
+                             help_text_shrinkage = NULL) {
   check_ignored_arguments(..., ok_args = list("moment_match"))
 
-  if (!is.null(pit)) {
-    inform("'pit' specified so ignoring 'y','yrep','lw' if specified.")
-    pit <- validate_pit(pit)
-    if (is.null(K)) {
-      K <- length(pit)
-    }
-  } else {
-    suggested_package("rstantools")
-    y <- validate_y(y)
-    yrep <- validate_predictions(yrep, length(y))
-    lw <- .get_lw(lw, psis_object)
-    stopifnot(identical(dim(yrep), dim(lw)))
-    pit <- pmin(1, rstantools::loo_pit(object = yrep, y = y, lw = lw))
-    if (is.null(K)) {
-      K <- min(nrow(yrep) + 1, 1000)
-    }
+  method_args <- .pit_ecdf_resolve_method_args(
+    method = method,
+    pit = pit,
+    prob = prob,
+    interpolate_adj = interpolate_adj,
+    test = test,
+    gamma = gamma,
+    linewidth = linewidth,
+    color = color,
+    help_text = help_text,
+    pareto_pit = pareto_pit,
+    help_text_shrinkage = help_text_shrinkage
+  )
+  method <- method_args$method
+  test <- method_args$test
+  gamma <- method_args$gamma
+  linewidth <- method_args$linewidth
+  color <- method_args$color
+  help_text <- method_args$help_text
+  pareto_pit <- method_args$pareto_pit
+  help_text_shrinkage <- method_args$help_text_shrinkage
+
+  pit_data <- .compute_pit_values(y = y, yrep = yrep, lw = lw,
+    psis_object = psis_object, group = NULL, K = K, pareto_pit = pareto_pit,
+    pit = pit, loo_cv = TRUE)
+  pit <- pit_data$pit
+  K <- pit_data$K
+
+  if (
+    (method == "correlated") &&
+    ((test %in% c("POT", "PIET")) && any(pit %in% c(0, 1)))
+  ) {
+    stop(
+      "PIT values contain 0 or 1, but 'POT' and 'PIET' uniformity tests expect\n",
+      "  continuous input (0, 1). If PIT values are discrete,\n",
+      "  use 'PRIT' test instead. If 0 or 1 arise due to rounding, consider\n",
+      "  appropriate scaling approach or perturbing 0 and 1 values by a\n",
+      "  small epsilon so that they are strictly non-zero and non-one."
+    )
   }
 
-  n_obs <- length(pit)
-  gamma <- adjust_gamma(
-    N = n_obs,
+  .pit_ecdf_plot_single(
+    pit = pit,
     K = K,
     prob = prob,
-    interpolate_adj = interpolate_adj
+    plot_diff = plot_diff,
+    interpolate_adj = interpolate_adj,
+    method = method,
+    test = test,
+    gamma = gamma,
+    linewidth = linewidth,
+    color = color,
+    help_text = help_text,
+    x_label = "LOO-PIT",
+    help_text_shrinkage = help_text_shrinkage
   )
-  lims <- ecdf_intervals(gamma = gamma, N = n_obs, K = K)
-  ggplot() +
-    aes(
-      x = seq(0, 1, length.out = K),
-      y = ecdf(pit)(seq(0, 1, length.out = K)) -
-        (plot_diff == TRUE) * seq(0, 1, length.out = K),
-      color = "y"
-    ) +
-    geom_step(show.legend = FALSE) +
-    geom_step(
-      aes(
-        y = lims$upper[-1] / n_obs -
-          (plot_diff == TRUE) * seq(0, 1, length.out = K),
-        color = "yrep"
-      ),
-      linetype = 2, show.legend = FALSE
-    ) +
-    geom_step(
-      aes(
-        y = lims$lower[-1] / n_obs -
-          (plot_diff == TRUE) * seq(0, 1, length.out = K),
-        color = "yrep"
-      ),
-      linetype = 2, show.legend = FALSE
-    ) +
-    labs(y = ifelse(plot_diff, "ECDF difference", "ECDF"), x = "LOO PIT") +
-    yaxis_ticks(FALSE) +
-    scale_color_ppc() +
-    bayesplot_theme_get()
 }
 
 
@@ -586,7 +624,7 @@ ppc_loo_intervals <-
       geom_linerange(
         mapping = intervals_outer_aes(color = "yrep"),
         alpha = alpha,
-        size = size
+        linewidth = size
       ) +
       geom_pointrange(
         shape = 21,
@@ -784,14 +822,6 @@ ppc_loo_ribbon <-
   # Generate boundary corrected values via a linear convolution using a
   # 1-D Gaussian window filter. This method uses the "reflection method"
   # to estimate these pvalues and helps speed up the code
-  if (any(is.infinite(x))) {
-    warning(paste(
-      "Ignored", sum(is.infinite(x)),
-      "Non-finite PIT values are invalid for KDE boundary correction method"
-    ))
-    x <- x[is.finite(x)]
-  }
-
   if (grid_len < 100) {
     grid_len <- 100
   }
@@ -807,6 +837,10 @@ ppc_loo_ribbon <-
 
   # 1-D Convolution
   bc_pvals <- .linear_convolution(x, bw, grid_counts, grid_breaks, grid_len)
+
+  if (all(is.na(bc_pvals))) {
+    abort("KDE boundary correction produced all NA values.")
+  }
 
   # Generate vector of x-axis values for plotting based on binned relative freqs
   n_breaks <- length(grid_breaks)
@@ -835,7 +869,7 @@ ppc_loo_ribbon <-
   bc_mat <- matrix(0, nrow(unifs), ncol(unifs))
 
   # Generate boundary corrected reference values
-  for (i in 1:nrow(unifs)) {
+  for (i in seq_len(nrow(unifs))) {
     bc_list <- .kde_correction(unifs[i, ],
       bw = bw,
       grid_len = grid_len

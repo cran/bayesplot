@@ -102,6 +102,23 @@ available_ppc(pattern = "_grouped")
 ## ----ppc_stat_grouped, message=FALSE------------------------------------------
 ppc_stat_grouped(y, yrep_nb, group = roaches$treatment, stat = "prop_zero")
 
+## ----data_intervals, eval=params$EVAL-----------------------------------------
+d <- ppc_intervals_data(y, yrep_nb, prob = 0.5, prob_outer = 0.9)
+head(d)
+
+## ----data_intervals_custom, eval=params$EVAL----------------------------------
+ggplot(d, aes(x = x, y = m)) +
+  geom_linerange(aes(ymin = ll, ymax = hh), color = "skyblue", linewidth = 0.6) +
+  geom_linerange(aes(ymin = l, ymax = h), color = "steelblue", linewidth = 1.2) +
+  geom_point(aes(y = y_obs), shape = 21, fill = "red", size = 1.5) +
+  labs(title = "Custom interval plot from ppc_intervals_data()",
+       x = "Observation", y = "Value") +
+  theme_minimal()
+
+## ----data_stat, eval=params$EVAL, message=FALSE-------------------------------
+stat_d <- ppc_stat_data(y, yrep_nb, stat = "median")
+head(stat_d)
+
 ## ----pp_check.foo-------------------------------------------------------------
 # @param object An object of class "foo".
 # @param type The type of plot.
