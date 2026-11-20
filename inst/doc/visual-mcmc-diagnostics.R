@@ -4,6 +4,8 @@ list(EVAL = TRUE)
 ## ----SETTINGS-knitr, include=FALSE--------------------------------------------
 stopifnot(require("knitr"))
 library("bayesplot")
+# pkgdown forces ANSI colors, which it can't render with comment = NA
+options(cli.num_colors = 1)
 knitr::opts_chunk$set(
   dev = "png",
   dpi = 150,
@@ -136,16 +138,20 @@ mcmc_trace(posterior_cp, pars = "tau", np = np_cp) +
   xlab("Post-warmup iteration")
 
 ## ----echo=FALSE---------------------------------------------------------------
-#A check that the chosen window still relevant
-n_divergent_in_window <- np_cp %>% filter(Parameter == "divergent__" & Value == 1 & Iteration >= 400 & Iteration <= 600) %>% nrow()
+# Zoom in on the 200-iteration window with the most divergences. Where the
+# divergences fall depends on the platform and compiler, so a hard-coded window
+# can stop being illustrative even with a fixed seed.
+div_iters <- np_cp %>% filter(Parameter == "divergent__" & Value == 1) %>% pull(Iteration)
+window_starts <- seq_len(max(np_cp$Iteration) - 200)
+n_div_in_window <- sapply(window_starts, function(s) sum(div_iters >= s & div_iters <= s + 200))
+zoom_window <- window_starts[which.max(n_div_in_window)] + c(0, 200)
 
-if(n_divergent_in_window < 6) {
-  divergences <- np_cp %>% filter(Parameter == "divergent__" & Value == 1) %>% select(Iteration) %>% get("Iteration", .) %>% sort() %>% paste(collapse = ",")
-  stop(paste("Too few divergences in the selected window for traceplot zoom. Change the window or the random seed.\nDivergences happened at: ", divergences))
+if (max(n_div_in_window) < 6) {
+  stop(paste("Too few divergences in any window for traceplot zoom. Change the random seed.\nDivergences happened at: ", paste(sort(div_iters), collapse = ",")))
 }
 
 ## ----mcmc_trace_zoom----------------------------------------------------------
-mcmc_trace(posterior_cp, pars = "tau", np = np_cp, window = c(200,400)) + 
+mcmc_trace(posterior_cp, pars = "tau", np = np_cp, window = zoom_window) +
   xlab("Post-warmup iteration")
 
 ## ----mcmc_nuts_divergence-----------------------------------------------------

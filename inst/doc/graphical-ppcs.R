@@ -4,6 +4,8 @@ list(EVAL = TRUE)
 ## ----SETTINGS-knitr, include=FALSE--------------------------------------------
 stopifnot(require("knitr"))
 library("bayesplot")
+# pkgdown forces ANSI colors, which it can't render with comment = NA
+options(cli.num_colors = 1)
 knitr::opts_chunk$set(
   dev = "png",
   dpi = 150,
